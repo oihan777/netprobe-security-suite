@@ -1,8 +1,9 @@
 import { motion } from 'framer-motion';
-import { LayoutGrid, Terminal, BarChart3, Bot, FileText, Network, ShieldAlert, Cpu, Clock } from 'lucide-react';
+import { LayoutGrid, Terminal, BarChart3, Bot, FileText, Network, ShieldAlert, Cpu, Clock, BarChart2, Layers } from 'lucide-react';
 import { getScoreColor, getScoreLabel } from '../../utils/formatters.js';
 
 const TABS = [
+  { id:'dashboard', label:'Dashboard',  Icon: BarChart2 },
   { id:'topology', label:'Red',        Icon: Network    },
   { id:'modules',  label:'Módulos',    Icon: LayoutGrid },
   { id:'terminal', label:'Terminal',   Icon: Terminal   },
@@ -12,6 +13,7 @@ const TABS = [
   { id:'cve',      label:'CVEs',       Icon: ShieldAlert },
   { id:'autopilot',label:'Autopilot',  Icon: Cpu         },
   { id:'scheduler', label:'Scheduler',  Icon: Clock       },
+  { id:'campaign',  label:'Campaña',    Icon: Layers      },
 ];
 
 export function Header({ activeTab, setActiveTab, isRunning, progress, globalScore }) {

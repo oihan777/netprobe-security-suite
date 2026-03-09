@@ -215,15 +215,123 @@ async def websocket_endpoint(ws: WebSocket):
                                     raw_output="\n".join(_raws)[:8000])
                     results.append({"module": module_id, "status": status, "score": score})
 
-                global_score = calculate_global_score(results)
+                # Smart score (IA + ponderado)
+                _api_key = ""
+                try:
+                    _smart = await compute_smart_score(results, _api_key, target)
+                    global_score = _smart["adjusted_score"]
+                except Exception:
+                    global_score = calculate_global_score(results)
+                    _smart = {"adjusted_score": global_score, "method": "simple"}
+
                 active_scans[client_id] = False
+
+                # Auto-save to history
+                _sid = None
+                try:
+                    from history import create_session, finish_session, save_result
+                    _sid = create_session(target)
+                    for _r in results:
+                        save_result(_sid, _r)
+                    finish_session(_sid, results, global_score)
+                    await log("SYSTEM", f"Sesión guardada en historial (ID: {_sid})")
+                except Exception as _he:
+                    await log("WARN", f"No se pudo guardar historial: {_he}")
+
                 await ws.send_json({
                     "type": "SCAN_COMPLETE",
                     "total_executed": len(results),
                     "global_score": global_score,
+                    "smart_score": _smart,
+                    "session_id": _sid,
                 })
                 await log("SYSTEM", "=" * 40)
                 await log("SYSTEM", f"Scan completo | Score global: {global_score}/100")
+
+            # ── MULTI_SCAN ──────────────────────────────────────
+            elif action == "MULTI_SCAN":
+                targets   = msg.get("targets", [])
+                modules   = msg.get("modules", [])
+                intensity = int(msg.get("intensity", 3))
+                duration  = int(msg.get("duration", 30))
+
+                # Validate all targets first
+                valid_targets = []
+                for t in targets:
+                    t = t.strip()
+                    if not t: continue
+                    v = validate_target_ip(t)
+                    if v["valid"]:
+                        valid_targets.append(t)
+                    else:
+                        await log("WARN", f"Target inválido ignorado: {t} — {v['message']}")
+
+                if not valid_targets:
+                    await log("ERROR", "No hay targets válidos para el scan multi-target")
+                    continue
+
+                await log("SYSTEM", f"Multi-target: {len(valid_targets)} targets · {len(modules)} módulos cada uno")
+                await log("SYSTEM", "=" * 48)
+                active_scans[client_id] = True
+                campaign_results = {}
+
+                for t_idx, t_target in enumerate(valid_targets):
+                    if not active_scans.get(client_id, True):
+                        await log("WARN", "Campaña detenida por el usuario")
+                        break
+                    await log("SYSTEM", f"[{t_idx+1}/{len(valid_targets)}] Escaneando {t_target}…")
+                    await ws.send_json({"type": "TARGET_START", "target": t_target, "index": t_idx+1, "total": len(valid_targets)})
+
+                    t_results = []
+                    for i, module_id in enumerate(modules):
+                        if not active_scans.get(client_id, True): break
+                        await ws.send_json({"type": "MODULE_START", "module": module_id,
+                            "module_name": MODULE_NAMES.get(module_id, module_id),
+                            "current": i+1, "total": len(modules)})
+                        entry = MODULE_RUNNERS.get(module_id)
+                        if not entry:
+                            await ws_result(ws, module_id, "unknown", "ERROR", None, {})
+                            continue
+                        category, runner = entry
+                        import time as _time; _t0 = _time.time(); _cmds = []; _raws = []
+                        async def _log_c(lt, msg, mod=None):
+                            if lt == "CMD": _cmds.append(msg)
+                            elif lt == "RAW": _raws.append(msg)
+                            await log(lt, msg, mod)
+                        try:
+                            data, status, score = await runner(module_id, t_target, intensity, duration, _log_c)
+                        except Exception as e:
+                            data, status, score = {}, "ERROR", None
+                        _dur_ms = int((_time.time() - _t0)*1000)
+                        r_obj = {"module": module_id, "name": MODULE_NAMES.get(module_id, module_id),
+                                 "category": category, "status": status, "score": score,
+                                 "data": data, "commands": _cmds, "raw_output": "\n".join(_raws)[:4000],
+                                 "duration_ms": _dur_ms, "timestamp": datetime.now().isoformat()}
+                        t_results.append(r_obj)
+                        await ws_result(ws, module_id, category, status, score, data, duration_ms=_dur_ms,
+                                        commands=_cmds, raw_output="\n".join(_raws)[:4000])
+
+                    t_score = calculate_global_score([{"status":r["status"],"score":r["score"]} for r in t_results])
+                    campaign_results[t_target] = {"results": t_results, "score": t_score}
+
+                    # Save to history
+                    try:
+                        _sid = create_session(t_target, "multi-target")
+                        for _r in t_results: save_result(_sid, _r)
+                        finish_session(_sid, t_results, t_score)
+                    except Exception as _he:
+                        pass
+
+                    await ws.send_json({"type": "TARGET_COMPLETE", "target": t_target,
+                        "score": t_score, "index": t_idx+1, "total": len(valid_targets)})
+                    await log("RESULT", f"✓ {t_target} — Score: {t_score}/100", None)
+                    await log("SYSTEM", "-" * 40)
+
+                active_scans[client_id] = False
+                await ws.send_json({"type": "MULTI_SCAN_COMPLETE",
+                    "results": {t: {"score": v["score"]} for t, v in campaign_results.items()},
+                    "total_targets": len(valid_targets)})
+                await log("SYSTEM", f"Campaña completa — {len(valid_targets)} targets escaneados")
 
             # ── STOP_SCAN ───────────────────────────────────────
             elif action == "STOP_SCAN":
@@ -409,6 +517,13 @@ register_cve_routes(app)
 # ─────────────────────────── Autopilot routes ────────────────────
 from autopilot import register_autopilot_routes
 register_autopilot_routes(app)
+
+# ─────────────────────────── History routes ─────────────────────
+from smart_score import register_smart_score_routes, smart_score as compute_smart_score, calculate_weighted_score
+from history import register_history_routes, create_session, finish_session, save_result, init_db as history_init_db
+register_smart_score_routes(app)
+register_history_routes(app)
+history_init_db()
 
 # ─────────────────────────── PDF routes ─────────────────────────
 from pdf_report import register_pdf_routes

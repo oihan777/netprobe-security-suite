@@ -1,3 +1,4 @@
+import { SmartScorePanel } from '../score/SmartScorePanel.jsx';
 import { useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronRight, Loader2, Sparkles, Filter, SortAsc, Terminal, FileText } from 'lucide-react';
@@ -405,7 +406,7 @@ function ResultRow({ result, index, apiKey, aiCache, aiLoading, onAnalyze }) {
 }
 
 // ── Main export ───────────────────────────────────────────────────
-export function Results({ results, globalScore, apiKey }) {
+export function Results({ results, globalScore, apiKey, target = '' }) {
   const [statusFilter, setStatusFilter] = useState('ALL');
   const [catFilter,    setCatFilter]    = useState('ALL');
   const [sortBy,       setSortBy]       = useState('time');
@@ -440,6 +441,11 @@ export function Results({ results, globalScore, apiKey }) {
   return (
     <div className="h-full overflow-y-auto">
       <div className="p-4 space-y-4">
+
+        {/* Smart Score */}
+        {results.length > 0 && (
+          <SmartScorePanel results={results} apiKey={apiKey} target={target} />
+        )}
 
         {/* Summary */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">

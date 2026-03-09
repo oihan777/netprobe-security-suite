@@ -12,6 +12,8 @@ import { AIAnalyst } from './components/ai/AIAnalyst.jsx';
 import { Report } from './components/report/Report.jsx';
 import { NetworkTopology } from './components/topology/NetworkTopology.jsx';
 import { LegalBanner } from './components/ui/LegalBanner.jsx';
+import { Dashboard } from './components/dashboard/Dashboard.jsx';
+import { CampaignPanel } from './components/campaign/CampaignPanel.jsx';
 import { useWebSocket } from './hooks/useWebSocket.js';
 import { useAI } from './hooks/useAI.js';
 import { useLocalStorage } from './hooks/useLocalStorage.js';
@@ -80,14 +82,16 @@ export default function App() {
                 <motion.div key={activeTab} className="h-full"
                   initial={{ opacity:0 }} animate={{ opacity:1 }} exit={{ opacity:0 }}
                   transition={{ duration:0.15 }}>
+                  {activeTab === 'dashboard' && <Dashboard currentResults={ws.results} currentScore={ws.results.length ? ws.calculateScore() : null} currentTarget={target} />}
                   {activeTab === 'topology'  && <NetworkTopology onSetTarget={setTarget} />}
                   {activeTab === 'modules'  && <ModulesGrid selectedModules={selectedModules} setSelectedModules={setSelectedModules} results={ws.results} />}
                   {activeTab === 'terminal' && <Terminal logs={ws.logs} isRunning={ws.isRunning} progress={ws.progress} onClear={ws.clearLogs} onRunCommand={ws.runCommand} results={ws.results} />}
-                  {activeTab === 'results'  && <Results results={ws.results} globalScore={ws.calculateScore()} apiKey={apiKey} />}
+                  {activeTab === 'results'  && <Results results={ws.results} globalScore={ws.calculateScore()} apiKey={apiKey} target={target} />}
                   {activeTab === 'ai'       && <AIAnalyst messages={ai.messages} isLoading={ai.isLoading} isStreaming={ai.isStreaming} usage={ai.usage} error={ai.error} onSendMessage={(m, model) => ai.sendMessage(m, ws.results, target, selectedModules)} onGenerateReport={() => { setActiveTab('ai'); ai.generateReport(ws.results, target, selectedModules); }} onCancel={ai.cancelRequest} quickPrompts={ai.quickPrompts} onClear={ai.clearMessages} apiKey={apiKey} onValidateKey={ai.validateKey} />}
                   {activeTab === 'cve'       && <CVEPanel results={ws.results} />}
                   {activeTab === 'autopilot' && <AutopilotPanel results={ws.results} apiKey={apiKey} onLaunchModules={(mods) => { setSelectedModules(mods); setActiveTab('modules'); }} />}
                   {activeTab === 'scheduler' && <SchedulerPanel selectedModules={selectedModules} />}
+                  {activeTab === 'campaign'  && <CampaignPanel ws={ws} selectedModules={selectedModules} intensity={intensity} duration={duration} />}
                   {activeTab === 'report'   && <Report results={ws.results} target={target} globalScore={ws.calculateScore()} onGenerateAIReport={() => { setActiveTab('ai'); ai.generateReport(ws.results, target, selectedModules); }} />}
                 </motion.div>
               </AnimatePresence>

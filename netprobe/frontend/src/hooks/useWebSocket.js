@@ -8,6 +8,7 @@ export function useWebSocket() {
   const [logs, setLogs]                 = useState([]);
   const [results, setResults]           = useState([]);
   const [progress, setProgress]         = useState({ current:0, total:0, module:null });
+  const [campaignResults, setCampaignResults] = useState({});
   const [connectionStatus, setStatus]   = useState('disconnected');
 
   const wsRef          = useRef(null);
@@ -51,6 +52,20 @@ export function useWebSocket() {
         setIsRunning(false);
         setProgress({ current:0, total:0, module:null });
         addLog('SYSTEM', `✓ Scan completo — ${data.total_executed} módulos — Score: ${data.global_score}/100`);
+        break;
+      case 'TARGET_START':
+        setProgress(p => ({ ...p, module: `${data.target} (${data.index}/${data.total})` }));
+        addLog('SYSTEM', `▶ Target ${data.index}/${data.total}: ${data.target}`);
+        break;
+      case 'TARGET_COMPLETE':
+        addLog('RESULT', `✓ ${data.target} — Score: ${data.score}/100`);
+        setCampaignResults(p => ({ ...p, [data.target]: { score: data.score } }));
+        setProgress(p => ({ ...p, current: data.index, total: data.total }));
+        break;
+      case 'MULTI_SCAN_COMPLETE':
+        setIsRunning(false);
+        setProgress({ current:0, total:0, module:null });
+        addLog('SYSTEM', `✓ Campaña completa — ${data.total_targets} targets escaneados`);
         break;
       case 'SCAN_ERROR':
         setIsRunning(false);
@@ -124,6 +139,16 @@ export function useWebSocket() {
 
   const stopScan    = useCallback(() => send('STOP_SCAN'), [send]);
   const runCommand  = useCallback((command) => send('RUN_COMMAND', { command }), [send]);
+  const runMultiScan = useCallback((config) => {
+    setCampaignResults({});
+    setIsRunning(true);
+    return send('MULTI_SCAN', {
+      targets:   config.targets,
+      modules:   config.modules,
+      intensity: config.intensity || 3,
+      duration:  config.duration  || 30,
+    });
+  }, [send]);
 
   const clearAndStartScan = useCallback((config) => {
     setResults([]);
@@ -158,6 +183,6 @@ export function useWebSocket() {
 
   return {
     isConnected, isRunning, connectionStatus, logs, results, progress,
-    send, startScan, stopScan, clearLogs, clearResults, clearAndStartScan, runCommand, connect, calculateScore, addLog,
+    send, startScan, stopScan, clearLogs, clearResults, clearAndStartScan, runCommand, runMultiScan, campaignResults, connect, calculateScore, addLog,
   };
 }
