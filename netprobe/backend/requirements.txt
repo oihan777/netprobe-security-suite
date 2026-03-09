@@ -1,0 +1,15 @@
+fastapi==0.111.0
+uvicorn[standard]==0.29.0
+websockets==12.0
+scapy==2.5.0
+python-nmap==0.7.1
+paramiko==3.4.0
+requests==2.31.0
+httpx==0.27.0
+aiohttp==3.9.5
+dnspython==2.6.1
+pyyaml==6.0.1
+rich==13.7.1
+psutil==5.9.8
+netifaces==0.11.0
+zhipuai>=2.1.0
