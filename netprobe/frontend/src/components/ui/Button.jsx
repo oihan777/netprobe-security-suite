@@ -2,10 +2,10 @@ import { motion } from 'framer-motion';
 import { Loader2 } from 'lucide-react';
 
 const V = {
-  primary:   'bg-[rgba(0,255,136,0.15)] border-[rgba(0,255,136,0.3)] text-[#00ff88] hover:bg-[rgba(0,255,136,0.25)]',
-  secondary: 'bg-[rgba(255,255,255,0.06)] border-[rgba(255,255,255,0.1)] text-[rgba(255,255,255,0.7)] hover:text-white hover:bg-[rgba(255,255,255,0.1)]',
-  danger:    'bg-[rgba(255,69,58,0.15)] border-[rgba(255,69,58,0.3)] text-[#ff453a] hover:bg-[rgba(255,69,58,0.25)]',
-  ghost:     'bg-transparent border-transparent text-[rgba(255,255,255,0.5)] hover:text-white hover:bg-[rgba(255,255,255,0.06)]',
+  primary:   'bg-[rgba(87,203,222,0.15)] border-[rgba(87,203,222,0.3)] text-[#66c0f4] hover:bg-[rgba(87,203,222,0.25)]',
+  secondary: 'bg-[rgba(102,192,244,0.08)] border-[rgba(102,192,244,0.15)] text-[#c6d4df] hover:text-white hover:bg-[rgba(102,192,244,0.15)]',
+  danger:    'bg-[rgba(201,64,64,0.15)] border-[rgba(201,64,64,0.3)] text-[#c94040] hover:bg-[rgba(201,64,64,0.25)]',
+  ghost:     'bg-transparent border-transparent text-[rgba(198,212,223,0.8)] hover:text-white hover:bg-[rgba(102,192,244,0.08)]',
 };
 const S = {
   xs: 'px-2 py-1 text-xs gap-1.5',

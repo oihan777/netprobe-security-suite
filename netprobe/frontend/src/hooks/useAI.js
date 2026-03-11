@@ -1,51 +1,86 @@
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 
 const BACKEND    = 'http://localhost:8000';
 const WS_BACKEND = 'ws://localhost:8000';
 
-export function useAI(apiKey = '') {
-  const [messages,    setMessages]    = useState([]);
-  const [isLoading,   setIsLoading]   = useState(false);
-  const [isStreaming, setIsStreaming]  = useState(false);
-  const [error,       setError]       = useState(null);
-  const [usage,       setUsage]       = useState(null);
+// ── Persistencia de chat por caso ─────────────────────────────────
+function loadCaseMessages(caseId) {
+  if (!caseId) return [];
+  try {
+    const raw = window.localStorage.getItem(`np-ai-${caseId}`);
+    return raw ? JSON.parse(raw) : [];
+  } catch { return []; }
+}
+
+function saveCaseMessages(caseId, messages) {
+  if (!caseId) return;
+  try {
+    // Guardar solo los últimos 100 mensajes para no saturar localStorage
+    const trimmed = messages.slice(-100);
+    window.localStorage.setItem(`np-ai-${caseId}`, JSON.stringify(trimmed));
+  } catch (e) { console.error('Error saving AI messages:', e); }
+}
+
+export function useAI(apiKey = '', model = 'llama-3.3-70b-versatile', caseId = null) {
+  const [messages,    setMessages]   = useState(() => loadCaseMessages(caseId));
+  const [isLoading,   setIsLoading]  = useState(false);
+  const [isStreaming, setIsStreaming] = useState(false);
+  const [error,       setError]      = useState(null);
+  const [usage,       setUsage]      = useState(null);
   const wsRef    = useRef(null);
   const abortRef = useRef(null);
+  const caseIdRef = useRef(caseId);
 
-  const addMsg = (role, content, extra = {}) => {
+  // Sincronizar ref
+  useEffect(() => { caseIdRef.current = caseId; }, [caseId]);
+
+  // Al cambiar de caso, cargar su historial de chat
+  useEffect(() => {
+    setMessages(loadCaseMessages(caseId));
+    setError(null);
+    setIsLoading(false);
+    setIsStreaming(false);
+  }, [caseId]);
+
+  const addMsg = useCallback((role, content, extra = {}) => {
     const msg = { id: Date.now() + Math.random(), role, content, ts: new Date().toISOString(), ...extra };
-    setMessages(prev => [...prev, msg]);
+    setMessages(prev => {
+      const next = [...prev, msg];
+      saveCaseMessages(caseIdRef.current, next);
+      return next;
+    });
     return msg;
-  };
+  }, []);
 
-  const updateLastMsg = (updater) => {
+  const updateLastMsg = useCallback((updater) => {
     setMessages(prev => {
       const copy = [...prev];
       copy[copy.length - 1] = updater(copy[copy.length - 1]);
+      saveCaseMessages(caseIdRef.current, copy);
       return copy;
     });
-  };
+  }, []);
 
   // ── streaming via WebSocket ──────────────────────────────────
-  const streamMessage = useCallback(async (userMessage, results = [], target = '', modules = [], model = 'llama-3.3-70b-versatile') => {
+  const streamMessage = useCallback(async (userMessage, results = [], target = '', modules = []) => {
     if (!apiKey) {
       addMsg('user', userMessage);
-      addMsg('assistant', '⚠️ **API Key no configurada**\n\nIntroduce tu API Key de Groq en el panel lateral.\nObtén una gratis en **console.groq.com**', { isError: true });
+      addMsg('assistant', '⚠️ **API Key no configurada**\n\nIntroduce tu Groq API Key en el panel lateral.', { isError: true });
       return;
     }
 
     setIsLoading(true);
     setIsStreaming(false);
     setError(null);
+
     addMsg('user', userMessage);
 
-    const placeholder = { id: Date.now() + 1, role: 'assistant', content: '', ts: new Date().toISOString(), isStreaming: true, model };
+    const placeholder = { id: Date.now() + 1, role: 'assistant', content: '', ts: new Date().toISOString(), isStreaming: true };
     setMessages(prev => [...prev, placeholder]);
 
-    const history = messages.slice(-12).map(m => ({ role: m.role, content: m.content }));
-
-    // Build scan_context as expected by backend
-    const scan_context = { target, results, score: null };
+    // Leer historial actual para contexto
+    const currentMsgs = loadCaseMessages(caseIdRef.current);
+    const history = currentMsgs.slice(-12).map(m => ({ role: m.role, content: m.content }));
 
     try {
       const ws = new WebSocket(`${WS_BACKEND}/api/ai/stream`);
@@ -55,10 +90,10 @@ export function useAI(apiKey = '') {
         ws.onopen = () => {
           ws.send(JSON.stringify({
             api_key:      apiKey,
-            model:        model,
+            model,
             message:      userMessage,
-            history:      history,
-            scan_context: scan_context,
+            history,
+            scan_context: { results, target, modules },
           }));
         };
 
@@ -67,10 +102,10 @@ export function useAI(apiKey = '') {
           if (data.type === 'start') {
             setIsStreaming(true);
           } else if (data.type === 'chunk') {
-            // backend sends data.text (not data.content)
-            updateLastMsg(m => ({ ...m, content: m.content + (data.text || '') }));
+            const chunk = data.text ?? data.content ?? '';
+            updateLastMsg(m => ({ ...m, content: m.content + chunk }));
           } else if (data.type === 'done') {
-            updateLastMsg(m => ({ ...m, isStreaming: false, model: data.model || model }));
+            updateLastMsg(m => ({ ...m, isStreaming: false }));
             ws.close();
             resolve();
           } else if (data.type === 'error') {
@@ -79,7 +114,7 @@ export function useAI(apiKey = '') {
         };
 
         ws.onerror = () => reject(new Error('Error de conexión WebSocket'));
-        ws.onclose = (e) => { if (e.code !== 1000 && e.code !== 1005) reject(new Error('Conexión cerrada inesperadamente')); };
+        ws.onclose = (e) => { if (e.code !== 1000) resolve(); };
       });
 
     } catch (err) {
@@ -90,14 +125,63 @@ export function useAI(apiKey = '') {
       setIsStreaming(false);
       wsRef.current = null;
     }
-  }, [messages, apiKey]);
+  }, [apiKey, model, addMsg, updateLastMsg]);
 
-  // ── generate full report ─────────────────────────────────────
-  const generateReport = useCallback(async (results, target, modules, model = 'llama-3.3-70b-versatile') => {
+  // ── non-streaming fallback ────────────────────────────────────
+  const sendMessageSync = useCallback(async (userMessage, results = [], target = '', modules = []) => {
     if (!apiKey) {
+      addMsg('user', userMessage);
+      addMsg('assistant', '⚠️ **API Key no configurada**', { isError: true });
+      return null;
+    }
+
+    setIsLoading(true);
+    setError(null);
+    abortRef.current = new AbortController();
+    addMsg('user', userMessage);
+
+    const currentMsgs = loadCaseMessages(caseIdRef.current);
+    const history = currentMsgs.slice(-12).map(m => ({ role: m.role, content: m.content }));
+
+    try {
+      const resp = await fetch(`${BACKEND}/api/ai/chat`, {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          api_key:      apiKey,
+          model,
+          message:      userMessage,
+          history,
+          scan_context: { results, target, modules },
+        }),
+        signal: abortRef.current.signal,
+      });
+
+      const data = await resp.json();
+      const content = data.response ?? data.content ?? data.message ?? JSON.stringify(data);
+      if (!resp.ok) throw new Error(content);
+
+      if (data.usage) setUsage(data.usage);
+      return addMsg('assistant', content);
+
+    } catch (err) {
+      if (err.name === 'AbortError') return null;
+      addMsg('assistant', `⚠️ **Error:** ${err.message}`, { isError: true });
+      setError(err.message);
+      return null;
+    } finally {
+      setIsLoading(false);
+    }
+  }, [apiKey, model, addMsg]);
+
+  // ── generate report ───────────────────────────────────────────
+  const generateReport = useCallback(async (results, target, modules) => {
+    if (!apiKey) {
+      addMsg('user', 'Genera el informe ejecutivo completo');
       addMsg('assistant', '⚠️ **API Key no configurada**', { isError: true });
       return;
     }
+
     setIsLoading(true);
     setError(null);
     addMsg('user', '📄 Genera el informe ejecutivo completo de seguridad');
@@ -106,18 +190,18 @@ export function useAI(apiKey = '') {
 
     try {
       const resp = await fetch(`${BACKEND}/api/ai/report`, {
-        method: 'POST',
+        method:  'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           api_key:      apiKey,
-          model:        model,
-          message:      'generate report',
-          scan_context: { target, results },
+          model,
+          scan_context: { results, target, modules },
+          results, target, modules,
         }),
       });
       const data = await resp.json();
-      // backend returns data.report
-      const content = data.report || data.response || data.content || data.error || 'Sin respuesta';
+      const content = data.report ?? data.response ?? data.content ?? 'Sin respuesta';
+      if (!resp.ok) throw new Error(content);
       updateLastMsg(m => ({ ...m, content, isStreaming: false }));
     } catch (err) {
       updateLastMsg(m => ({ ...m, content: `⚠️ **Error:** ${err.message}`, isError: true, isStreaming: false }));
@@ -125,13 +209,13 @@ export function useAI(apiKey = '') {
     } finally {
       setIsLoading(false);
     }
-  }, [apiKey]);
+  }, [apiKey, model, addMsg, updateLastMsg]);
 
-  // ── validate API key ─────────────────────────────────────────
+  // ── validate key ──────────────────────────────────────────────
   const validateKey = useCallback(async (key) => {
     try {
       const resp = await fetch(`${BACKEND}/api/ai/validate`, {
-        method: 'POST',
+        method:  'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ api_key: key }),
       });
@@ -142,22 +226,32 @@ export function useAI(apiKey = '') {
   }, []);
 
   const quickPrompts = [
-    { id: 'vectors',  label: 'Vectores sin cubrir',      prompt: 'Qué vectores de ataque no fueron probados? Sugiere pruebas adicionales.' },
-    { id: 'critical', label: 'Vulnerabilidades críticas', prompt: 'Lista las vulnerabilidades críticas. Cuál debe remediarse primero?' },
+    { id: 'vectors',  label: 'Vectores sin cubrir',      prompt: '¿Qué vectores de ataque no fueron probados? Sugiere pruebas adicionales.' },
+    { id: 'critical', label: 'Vulnerabilidades críticas', prompt: 'Lista las vulnerabilidades críticas. ¿Cuál debe remediarse primero?' },
     { id: 'improve',  label: 'Plan de mejora',            prompt: 'Crea un plan de mejora con acciones priorizadas y timeline.' },
-    { id: 'suricata', label: 'Reglas Suricata',           prompt: 'Qué reglas de Suricata ajustar para los ataques que pasaron?' },
+    { id: 'suricata', label: 'Reglas Suricata/Zeek',      prompt: '¿Qué reglas de Suricata/Zeek ajustar para los ataques que pasaron?' },
     { id: 'partial',  label: 'Analizar PARTIAL',          prompt: 'Explica los resultados PARTIAL y cómo mejorar la defensa.' },
     { id: 'fortinet', label: 'Config Fortinet',           prompt: 'Configuraciones FortiOS específicas para remediar los hallazgos.' },
-    { id: 'compare',  label: 'CIS Benchmark',             prompt: 'Compara con CIS Benchmarks. Qué controles fallan?' },
+    { id: 'compare',  label: 'CIS Benchmark',             prompt: 'Compara con CIS Benchmarks. ¿Qué controles fallan?' },
   ];
+
+  const clearMessages = useCallback(() => {
+    setMessages([]);
+    setError(null);
+    setUsage(null);
+    if (caseIdRef.current) {
+      window.localStorage.removeItem(`np-ai-${caseIdRef.current}`);
+    }
+  }, []);
 
   return {
     messages, isLoading, isStreaming, error, usage,
     sendMessage:     streamMessage,
+    sendMessageSync,
     generateReport,
     validateKey,
     quickPrompts,
-    clearMessages: () => { setMessages([]); setError(null); setUsage(null); },
+    clearMessages,
     cancelRequest: () => {
       wsRef.current?.close();
       abortRef.current?.abort();

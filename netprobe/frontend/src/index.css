@@ -6,36 +6,43 @@
   * { box-sizing: border-box; margin: 0; padding: 0; }
   
   body {
-    background: #000000;
-    color: #ffffff;
-    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif;
+    background: #1b2838;
+    color: #c6d4df;
+    font-family: -apple-system, BlinkMacSystemFont, 'Motiva Sans', 'Segoe UI', sans-serif;
     -webkit-font-smoothing: antialiased;
     overflow: hidden;
   }
   
   ::-webkit-scrollbar { width: 4px; height: 4px; }
-  ::-webkit-scrollbar-track { background: transparent; }
-  ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 2px; }
-  ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.25); }
+  ::-webkit-scrollbar-track { background: #16202d; }
+  ::-webkit-scrollbar-thumb { background: rgba(102,192,244,0.25); border-radius: 2px; }
+  ::-webkit-scrollbar-thumb:hover { background: rgba(102,192,244,0.45); }
 }
 
 @layer components {
   .glass-card {
-    background: rgba(255,255,255,0.04);
-    border: 1px solid rgba(255,255,255,0.1);
+    background: rgba(42,71,94,0.3);
+    border: 1px solid rgba(102,192,244,0.15);
     backdrop-filter: blur(40px);
     -webkit-backdrop-filter: blur(40px);
   }
   
+  .text-gradient-steam {
+    background: linear-gradient(135deg, #66c0f4, #57cbde);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
   .text-gradient-green {
-    background: linear-gradient(135deg, #00ff88, #0a84ff);
+    background: linear-gradient(135deg, #57cbde, #66c0f4);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
   
   .scan-line {
-    background: linear-gradient(90deg, transparent 0%, rgba(0,255,136,0.1) 50%, transparent 100%);
+    background: linear-gradient(90deg, transparent 0%, rgba(102,192,244,0.08) 50%, transparent 100%);
     animation: scanLine 3s linear infinite;
   }
 }
@@ -53,5 +60,5 @@
 .terminal-cursor::after {
   content: '█';
   animation: terminalBlink 1s step-end infinite;
-  color: #00ff88;
+  color: #66c0f4;
 }

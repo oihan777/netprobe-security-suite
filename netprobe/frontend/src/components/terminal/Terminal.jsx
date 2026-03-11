@@ -3,14 +3,14 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Terminal as TermIcon, Download, Trash2, Send, X, Copy, Check, Cpu, Zap } from 'lucide-react';
 
 const LOG_STYLES = {
-  MODULE:  { color: '#00ff88', prefix: '━ ' },
-  CMD:     { color: '#ffd60a', prefix: '$ ' },
-  RAW:     { color: '#c8c8d8', prefix: ''   },
-  RESULT:  { color: '#0a84ff', prefix: '◆ ' },
-  WARN:    { color: '#ff9f0a', prefix: '⚠ ' },
-  ERROR:   { color: '#ff453a', prefix: '✖ ' },
-  SYSTEM:  { color: '#505060', prefix: '· ' },
-  INFO:    { color: '#ebebf5', prefix: '  ' },
+  MODULE:  { color: '#57cbde', prefix: '━ ' },
+  CMD:     { color: '#c8a951', prefix: '$ ' },
+  RAW:     { color: '#c6d4df', prefix: ''   },
+  RESULT:  { color: '#66c0f4', prefix: '◆ ' },
+  WARN:    { color: '#e4692a', prefix: '⚠ ' },
+  ERROR:   { color: '#c94040', prefix: '✖ ' },
+  SYSTEM:  { color: '#4a6b8a', prefix: '· ' },
+  INFO:    { color: '#c6d4df', prefix: '  ' },
 };
 
 function LogLine({ log }) {
@@ -22,7 +22,7 @@ function LogLine({ log }) {
       <div className="my-0.5 pl-14">
         {String(log.message).split('\n').map((line, i) => (
           <div key={i} className="font-mono text-[11px] leading-relaxed whitespace-pre-wrap break-all"
-            style={{ color: '#c8c8d8', opacity: line.trim() ? 0.8 : 0 }}>
+            style={{ color: '#c6d4df', opacity: line.trim() ? 0.8 : 0 }}>
             {line || '\u00A0'}
           </div>
         ))}
@@ -32,19 +32,19 @@ function LogLine({ log }) {
 
   if (log.type === 'CMD') {
     return (
-      <div className="flex items-start gap-2 my-1 mx-1 px-2.5 py-1.5 rounded-lg bg-[rgba(255,214,10,0.07)] border border-[rgba(255,214,10,0.15)]">
-        <span className="text-[9px] text-[rgba(255,255,255,0.2)] font-mono flex-shrink-0 mt-0.5 w-12 text-right select-none">{ts}</span>
-        <span className="font-mono text-[11px] font-bold text-[#ffd60a] flex-shrink-0">$</span>
-        <span className="font-mono text-[11px] text-[#ffd60a] break-all whitespace-pre-wrap">{log.message}</span>
+      <div className="flex items-start gap-2 my-1 mx-1 px-2.5 py-1.5 rounded-lg bg-[rgba(200,169,81,0.07)] border border-[rgba(200,169,81,0.15)]">
+        <span className="text-[9px] text-[rgba(143,152,160,0.6)] font-mono flex-shrink-0 mt-0.5 w-12 text-right select-none">{ts}</span>
+        <span className="font-mono text-[11px] font-bold text-[#c8a951] flex-shrink-0">$</span>
+        <span className="font-mono text-[11px] text-[#c8a951] break-all whitespace-pre-wrap">{log.message}</span>
       </div>
     );
   }
 
   if (log.type === 'RESULT') {
     return (
-      <div className="flex items-start gap-2 my-1 mx-1 px-2.5 py-1.5 rounded-lg bg-[rgba(10,132,255,0.07)] border border-[rgba(10,132,255,0.15)]">
-        <span className="text-[9px] text-[rgba(255,255,255,0.2)] font-mono flex-shrink-0 mt-0.5 w-12 text-right select-none">{ts}</span>
-        <span className="font-mono text-[11px] text-[#0a84ff] break-all whitespace-pre-wrap">{log.message}</span>
+      <div className="flex items-start gap-2 my-1 mx-1 px-2.5 py-1.5 rounded-lg bg-[rgba(102,192,244,0.07)] border border-[rgba(102,192,244,0.15)]">
+        <span className="text-[9px] text-[rgba(143,152,160,0.6)] font-mono flex-shrink-0 mt-0.5 w-12 text-right select-none">{ts}</span>
+        <span className="font-mono text-[11px] text-[#66c0f4] break-all whitespace-pre-wrap">{log.message}</span>
       </div>
     );
   }
@@ -52,9 +52,9 @@ function LogLine({ log }) {
   if (log.type === 'MODULE') {
     return (
       <div className="flex items-center gap-2 my-2.5 opacity-50">
-        <div className="h-px flex-1 bg-[rgba(0,255,136,0.2)]" />
-        <span className="font-mono text-[10px] font-semibold text-[#00ff88]">{log.message}</span>
-        <div className="h-px flex-1 bg-[rgba(0,255,136,0.2)]" />
+        <div className="h-px flex-1 bg-[rgba(87,203,222,0.2)]" />
+        <span className="font-mono text-[10px] font-semibold text-[#66c0f4]">{log.message}</span>
+        <div className="h-px flex-1 bg-[rgba(87,203,222,0.2)]" />
       </div>
     );
   }
@@ -125,29 +125,29 @@ function CommandPanel({ onRun, onClose, results }) {
     <motion.div
       initial={{ x: 300, opacity: 0 }} animate={{ x: 0, opacity: 1 }} exit={{ x: 300, opacity: 0 }}
       transition={{ type: 'spring', stiffness: 320, damping: 32 }}
-      className="w-68 flex-shrink-0 flex flex-col border-l border-[rgba(255,255,255,0.08)]"
-      style={{ background: '#0f0f0f', width: '272px' }}>
+      className="w-68 flex-shrink-0 flex flex-col border-l border-[rgba(102,192,244,0.1)]"
+      style={{ background: '#16202d', width: '272px' }}>
 
       {/* Header */}
-      <div className="flex items-center gap-2 px-3 py-2.5 border-b border-[rgba(255,255,255,0.07)] flex-shrink-0">
-        <Zap className="w-3.5 h-3.5 text-[#ffd60a]" />
+      <div className="flex items-center gap-2 px-3 py-2.5 border-b border-[rgba(102,192,244,0.1)] flex-shrink-0">
+        <Zap className="w-3.5 h-3.5 text-[#c8a951]" />
         <span className="text-xs font-semibold text-white flex-1">Ejecutar comando</span>
-        <button onClick={onClose} className="text-[rgba(255,255,255,0.3)] hover:text-white transition-colors">
+        <button onClick={onClose} className="text-[rgba(143,152,160,0.9)] hover:text-white transition-colors">
           <X className="w-3.5 h-3.5" />
         </button>
       </div>
 
       {/* Input */}
-      <div className="px-3 py-2.5 border-b border-[rgba(255,255,255,0.06)] flex-shrink-0">
-        <div className="flex items-center gap-2 px-2.5 py-2 rounded-lg border border-[rgba(255,214,10,0.3)] bg-[rgba(255,214,10,0.05)] focus-within:border-[rgba(255,214,10,0.6)] transition-colors">
-          <span className="text-[#ffd60a] font-mono text-xs font-bold flex-shrink-0">$</span>
+      <div className="px-3 py-2.5 border-b border-[rgba(102,192,244,0.08)] flex-shrink-0">
+        <div className="flex items-center gap-2 px-2.5 py-2 rounded-lg border border-[rgba(200,169,81,0.3)] bg-[rgba(200,169,81,0.05)] focus-within:border-[rgba(200,169,81,0.6)] transition-colors">
+          <span className="text-[#c8a951] font-mono text-xs font-bold flex-shrink-0">$</span>
           <input ref={inputRef} value={input}
             onChange={e => { setInput(e.target.value); setHistIdx(-1); }}
             onKeyDown={handleKey}
             placeholder="comando aquí..."
-            className="flex-1 bg-transparent text-[11px] font-mono text-white outline-none placeholder-[rgba(255,255,255,0.2)] min-w-0" />
+            className="flex-1 bg-transparent text-[11px] font-mono text-white outline-none placeholder-[rgba(143,152,160,0.6)] min-w-0" />
           <button onClick={submit} disabled={!input.trim()}
-            className="flex-shrink-0 p-1 rounded text-[#ffd60a] disabled:opacity-30 hover:bg-[rgba(255,214,10,0.15)] transition-colors">
+            className="flex-shrink-0 p-1 rounded text-[#c8a951] disabled:opacity-30 hover:bg-[rgba(200,169,81,0.15)] transition-colors">
             <Send className="w-3 h-3" />
           </button>
         </div>
@@ -168,7 +168,7 @@ function CommandPanel({ onRun, onClose, results }) {
 
         {/* AI commands from scan */}
         {aiCmds.length > 0 && (
-          <Section title="Del análisis anterior" color="rgba(191,90,242,0.7)" icon={<Cpu className="w-2.5 h-2.5" />}>
+          <Section title="Del análisis anterior" color="rgba(155,89,182,0.7)" icon={<Cpu className="w-2.5 h-2.5" />}>
             {aiCmds.map((cmd, i) => (
               <CmdRow key={i} icon="🤖" label={cmd} cmd={cmd}
                 onUse={() => setInput(cmd)} onRun={() => onRun(cmd)} onCopy={() => copy(cmd)}
@@ -182,7 +182,7 @@ function CommandPanel({ onRun, onClose, results }) {
           <Section title="Historial reciente">
             {history.slice(0, 8).map((cmd, i) => (
               <button key={i} onClick={() => setInput(cmd)}
-                className="w-full text-left px-2 py-1.5 rounded text-[10px] font-mono text-[rgba(255,255,255,0.35)] hover:text-white hover:bg-[rgba(255,255,255,0.04)] transition-all truncate">
+                className="w-full text-left px-2 py-1.5 rounded text-[10px] font-mono text-[rgba(198,212,223,0.6)] hover:text-white hover:bg-[rgba(42,71,94,0.4)] transition-all truncate">
                 {cmd}
               </button>
             ))}
@@ -193,9 +193,9 @@ function CommandPanel({ onRun, onClose, results }) {
   );
 }
 
-function Section({ title, color = 'rgba(255,255,255,0.3)', icon, children }) {
+function Section({ title, color = 'rgba(143,152,160,0.9)', icon, children }) {
   return (
-    <div className="px-3 py-2.5 border-b border-[rgba(255,255,255,0.05)]">
+    <div className="px-3 py-2.5 border-b border-[rgba(102,192,244,0.07)]">
       <p className="text-[9px] uppercase tracking-widest font-semibold mb-2 flex items-center gap-1.5" style={{ color }}>
         {icon}{title}
       </p>
@@ -206,18 +206,18 @@ function Section({ title, color = 'rgba(255,255,255,0.3)', icon, children }) {
 
 function CmdRow({ icon, label, cmd, onUse, onRun, onCopy, isCopied, monoLabel = false }) {
   return (
-    <div className="group flex items-center gap-2 px-1.5 py-1.5 rounded-lg hover:bg-[rgba(255,255,255,0.04)] transition-colors cursor-pointer" onClick={onUse}>
+    <div className="group flex items-center gap-2 px-1.5 py-1.5 rounded-lg hover:bg-[rgba(42,71,94,0.4)] transition-colors cursor-pointer" onClick={onUse}>
       <span className="text-sm flex-shrink-0">{icon}</span>
       <span className={`flex-1 text-[10px] text-[rgba(255,255,255,0.45)] group-hover:text-white transition-colors truncate ${monoLabel ? 'font-mono' : ''}`}>
         {label}
       </span>
       <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
         <button onClick={e => { e.stopPropagation(); onCopy(); }}
-          className="p-1 rounded text-[rgba(255,255,255,0.3)] hover:text-white transition-colors">
-          {isCopied ? <Check className="w-2.5 h-2.5 text-[#00ff88]" /> : <Copy className="w-2.5 h-2.5" />}
+          className="p-1 rounded text-[rgba(143,152,160,0.9)] hover:text-white transition-colors">
+          {isCopied ? <Check className="w-2.5 h-2.5 text-[#66c0f4]" /> : <Copy className="w-2.5 h-2.5" />}
         </button>
         <button onClick={e => { e.stopPropagation(); onRun(); }}
-          className="p-1 rounded text-[rgba(255,255,255,0.3)] hover:text-[#ffd60a] transition-colors">
+          className="p-1 rounded text-[rgba(143,152,160,0.9)] hover:text-[#c8a951] transition-colors">
           <Send className="w-2.5 h-2.5" />
         </button>
       </div>
@@ -243,17 +243,17 @@ function LogPane({ logs }) {
   return (
     <div ref={ref} onScroll={onScroll}
       className="flex-1 overflow-y-auto py-2 space-y-0.5"
-      style={{ background: '#080808' }}>
+      style={{ background: '#16202d' }}>
       {!logs.length && (
         <div className="flex flex-col items-center justify-center h-full text-center py-16">
-          <TermIcon className="w-7 h-7 text-[rgba(255,255,255,0.07)] mb-3" />
+          <TermIcon className="w-7 h-7 text-[rgba(102,192,244,0.1)] mb-3" />
           <p className="text-xs text-[rgba(255,255,255,0.18)]">Sin logs para este módulo</p>
         </div>
       )}
       {logs.map((log, i) => <LogLine key={log.id || i} log={log} />)}
       {!auto && (
         <button onClick={() => { setAuto(true); if (ref.current) ref.current.scrollTop = ref.current.scrollHeight; }}
-          className="sticky bottom-2 ml-auto mr-3 flex items-center gap-1 px-2 py-1 rounded-full text-[9px] bg-[rgba(0,255,136,0.12)] border border-[rgba(0,255,136,0.3)] text-[#00ff88]">
+          className="sticky bottom-2 ml-auto mr-3 flex items-center gap-1 px-2 py-1 rounded-full text-[9px] bg-[rgba(87,203,222,0.12)] border border-[rgba(87,203,222,0.3)] text-[#66c0f4]">
           ↓ ir al final
         </button>
       )}
@@ -267,9 +267,9 @@ function TabBtn({ active, onClick, children }) {
     <button onClick={onClick}
       className="flex items-center gap-1 px-2.5 py-1 rounded-t text-[10px] font-medium transition-all whitespace-nowrap flex-shrink-0 border-b-2"
       style={{
-        borderBottomColor: active ? '#00ff88' : 'transparent',
-        background:  active ? 'rgba(255,255,255,0.07)' : 'transparent',
-        color:       active ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.38)',
+        borderBottomColor: active ? '#57cbde' : 'transparent',
+        background:  active ? 'rgba(102,192,244,0.1)' : 'transparent',
+        color:       active ? '#c6d4df' : 'rgba(255,255,255,0.38)',
       }}>
       {children}
     </button>
@@ -281,7 +281,7 @@ export function Terminal({ logs, isRunning, progress, onClear, onRunCommand, res
   const [activeTab,   setActiveTab]   = useState('__ALL__');
   const [showCmd,     setShowCmd]     = useState(false);
 
-  const STATUS_DOT = { BLOCKED:'#30d158', DETECTED:'#ff9f0a', PARTIAL:'#ff6b35', PASSED:'#ff453a', ERROR:'#636366' };
+  const STATUS_DOT = { BLOCKED:'#5ba32b', DETECTED:'#e4692a', PARTIAL:'#e4692a', PASSED:'#c94040', ERROR:'#8f98a0' };
 
   // Build per-module tabs from log.module field
   const moduleTabs = useMemo(() => {
@@ -323,37 +323,37 @@ export function Terminal({ logs, isRunning, progress, onClear, onRunCommand, res
   };
 
   return (
-    <div className="h-full flex flex-col" style={{ background: '#0a0a0a' }}>
+    <div className="h-full flex flex-col" style={{ background: '#16202d' }}>
 
       {/* Top bar */}
-      <div className="flex items-center justify-between px-3 py-2 border-b border-[rgba(255,255,255,0.07)] flex-shrink-0" style={{ background: '#0f0f0f' }}>
+      <div className="flex items-center justify-between px-3 py-2 border-b border-[rgba(102,192,244,0.1)] flex-shrink-0" style={{ background: '#16202d' }}>
         <div className="flex items-center gap-2">
-          <TermIcon className="w-3.5 h-3.5 text-[#00ff88]" />
+          <TermIcon className="w-3.5 h-3.5 text-[#66c0f4]" />
           <span className="text-xs font-semibold text-white">Terminal</span>
-          <span className="text-[9px] text-[rgba(255,255,255,0.25)] font-mono">{logs.length} líneas</span>
+          <span className="text-[9px] text-[rgba(143,152,160,0.7)] font-mono">{logs.length} líneas</span>
           {isRunning && (
-            <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-[rgba(0,255,136,0.1)] border border-[rgba(0,255,136,0.2)]">
-              <div className="w-1.5 h-1.5 rounded-full bg-[#00ff88] animate-pulse" />
-              <span className="text-[9px] text-[#00ff88] font-mono">{progress.current}/{progress.total}</span>
-              {progress.module && <span className="text-[9px] text-[rgba(0,255,136,0.6)] truncate max-w-28">{progress.module}</span>}
+            <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-[rgba(87,203,222,0.1)] border border-[rgba(87,203,222,0.2)]">
+              <div className="w-1.5 h-1.5 rounded-full bg-[#57cbde] animate-pulse" />
+              <span className="text-[9px] text-[#66c0f4] font-mono">{progress.current}/{progress.total}</span>
+              {progress.module && <span className="text-[9px] text-[rgba(87,203,222,0.6)] truncate max-w-28">{progress.module}</span>}
             </div>
           )}
         </div>
         <div className="flex items-center gap-1.5">
           <button onClick={exportLogs}
-            className="flex items-center gap-1 px-2 py-1 rounded text-[9px] text-[rgba(255,255,255,0.35)] hover:text-white hover:bg-[rgba(255,255,255,0.05)] transition-all">
+            className="flex items-center gap-1 px-2 py-1 rounded text-[9px] text-[rgba(198,212,223,0.6)] hover:text-white hover:bg-[rgba(102,192,244,0.07)] transition-all">
             <Download className="w-3 h-3" /> Export
           </button>
           <button onClick={onClear}
-            className="p-1 rounded text-[rgba(255,255,255,0.3)] hover:text-[#ff453a] hover:bg-[rgba(255,69,58,0.07)] transition-all">
+            className="p-1 rounded text-[rgba(143,152,160,0.9)] hover:text-[#c94040] hover:bg-[rgba(201,64,64,0.07)] transition-all">
             <Trash2 className="w-3.5 h-3.5" />
           </button>
           <button onClick={() => setShowCmd(p => !p)}
             className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[10px] font-semibold transition-all"
             style={{
-              background: showCmd ? 'rgba(255,214,10,0.12)' : 'rgba(255,255,255,0.05)',
-              border: `1px solid ${showCmd ? 'rgba(255,214,10,0.45)' : 'rgba(255,255,255,0.1)'}`,
-              color: showCmd ? '#ffd60a' : 'rgba(255,255,255,0.5)',
+              background: showCmd ? 'rgba(200,169,81,0.12)' : 'rgba(102,192,244,0.07)',
+              border: `1px solid ${showCmd ? 'rgba(200,169,81,0.45)' : 'rgba(102,192,244,0.15)'}`,
+              color: showCmd ? '#c8a951' : 'rgba(198,212,223,0.8)',
             }}>
             <Zap className="w-3 h-3" /> Ejecutar
           </button>
@@ -362,36 +362,36 @@ export function Terminal({ logs, isRunning, progress, onClear, onRunCommand, res
 
       {/* Progress */}
       {isRunning && progress.total > 0 && (
-        <div className="h-0.5 bg-[rgba(255,255,255,0.05)] flex-shrink-0">
-          <motion.div className="h-full bg-[#00ff88]"
+        <div className="h-0.5 bg-[rgba(102,192,244,0.07)] flex-shrink-0">
+          <motion.div className="h-full bg-[#57cbde]"
             animate={{ width: `${(progress.current / progress.total) * 100}%` }}
             transition={{ duration: 0.4 }} />
         </div>
       )}
 
       {/* Tab bar */}
-      <div className="flex items-end gap-0.5 px-2 pt-1 border-b border-[rgba(255,255,255,0.07)] overflow-x-auto flex-shrink-0"
-        style={{ background: '#0a0a0a', scrollbarWidth: 'none' }}>
+      <div className="flex items-end gap-0.5 px-2 pt-1 border-b border-[rgba(102,192,244,0.1)] overflow-x-auto flex-shrink-0"
+        style={{ background: '#16202d', scrollbarWidth: 'none' }}>
 
         <TabBtn active={activeTab === '__ALL__'} onClick={() => setActiveTab('__ALL__')}>
           Todos
-          <span className="ml-1 text-[9px] px-1 rounded-sm bg-[rgba(255,255,255,0.07)] text-[rgba(255,255,255,0.4)]">{logs.length}</span>
+          <span className="ml-1 text-[9px] px-1 rounded-sm bg-[rgba(102,192,244,0.1)] text-[rgba(198,212,223,0.7)]">{logs.length}</span>
         </TabBtn>
 
         {moduleTabs.map(tab => (
           <TabBtn key={tab.id} active={activeTab === tab.id} onClick={() => setActiveTab(tab.id)}>
-            {tab.status && <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: STATUS_DOT[tab.status] || '#505060' }} />}
+            {tab.status && <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: STATUS_DOT[tab.status] || '#4a6b8a' }} />}
             <span className="truncate max-w-24">{tab.name}</span>
-            <span className="ml-1 text-[9px] px-1 rounded-sm bg-[rgba(255,255,255,0.06)] text-[rgba(255,255,255,0.3)]">{tab.count}</span>
-            {tab.hasError && <span className="text-[#ff453a] font-bold">!</span>}
+            <span className="ml-1 text-[9px] px-1 rounded-sm bg-[rgba(102,192,244,0.08)] text-[rgba(143,152,160,0.9)]">{tab.count}</span>
+            {tab.hasError && <span className="text-[#c94040] font-bold">!</span>}
           </TabBtn>
         ))}
 
         {customLogs.length > 0 && (
           <TabBtn active={activeTab === '__CUSTOM__'} onClick={() => setActiveTab('__CUSTOM__')}>
-            <Zap className="w-2.5 h-2.5 text-[#ffd60a]" />
-            <span style={{ color: activeTab === '__CUSTOM__' ? '#ffd60a' : undefined }}>Custom</span>
-            <span className="ml-1 text-[9px] px-1 rounded-sm bg-[rgba(255,214,10,0.1)] text-[rgba(255,214,10,0.5)]">{customLogs.length}</span>
+            <Zap className="w-2.5 h-2.5 text-[#c8a951]" />
+            <span style={{ color: activeTab === '__CUSTOM__' ? '#c8a951' : undefined }}>Custom</span>
+            <span className="ml-1 text-[9px] px-1 rounded-sm bg-[rgba(200,169,81,0.1)] text-[rgba(200,169,81,0.5)]">{customLogs.length}</span>
           </TabBtn>
         )}
       </div>

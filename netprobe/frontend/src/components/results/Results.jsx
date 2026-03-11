@@ -12,7 +12,7 @@ function ScoreGauge({ score }) {
   return (
     <div className="relative w-28 h-28 flex items-center justify-center">
       <svg className="absolute inset-0 -rotate-90" viewBox="0 0 100 100">
-        <circle cx="50" cy="50" r={r} fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="8"/>
+        <circle cx="50" cy="50" r={r} fill="none" stroke="rgba(102,192,244,0.08)" strokeWidth="8"/>
         <motion.circle cx="50" cy="50" r={r} fill="none" stroke={c} strokeWidth="8"
           strokeLinecap="round" strokeDasharray={circ}
           initial={{ strokeDashoffset: circ }}
@@ -21,7 +21,7 @@ function ScoreGauge({ score }) {
       </svg>
       <div className="text-center">
         <div className="text-2xl font-bold" style={{ color: c }}>{score}</div>
-        <div className="text-[10px] text-[rgba(255,255,255,0.4)]">/ 100</div>
+        <div className="text-[10px] text-[rgba(198,212,223,0.7)]">/ 100</div>
       </div>
     </div>
   );
@@ -129,7 +129,7 @@ function useAIAnalysis(apiKey) {
 // ── Render bold markdown ──────────────────────────────────────────
 function AIText({ text }) {
   if (text === '_no_key_') return (
-    <p className="text-[11px] text-[rgba(255,255,255,0.3)] italic">
+    <p className="text-[11px] text-[rgba(143,152,160,0.9)] italic">
       Introduce una API Key de Groq en el sidebar para activar el análisis IA.
     </p>
   );
@@ -154,22 +154,22 @@ function AIText({ text }) {
 // ── Risk bar ──────────────────────────────────────────────────────
 function RiskIndicator({ status }) {
   const levels = [
-    { label: 'Bajo',    color: '#30d158', statuses: ['BLOCKED']  },
-    { label: 'Medio',   color: '#ff9f0a', statuses: ['DETECTED'] },
-    { label: 'Alto',    color: '#ff6b35', statuses: ['PARTIAL']  },
-    { label: 'Crítico', color: '#ff453a', statuses: ['PASSED']   },
+    { label: 'Bajo',    color: '#5ba32b', statuses: ['BLOCKED']  },
+    { label: 'Medio',   color: '#e4692a', statuses: ['DETECTED'] },
+    { label: 'Alto',    color: '#e4692a', statuses: ['PARTIAL']  },
+    { label: 'Crítico', color: '#c94040', statuses: ['PASSED']   },
   ];
   const current = levels.find(l => l.statuses.includes(status)) || levels[1];
   return (
-    <div className="rounded-lg border border-[rgba(255,255,255,0.06)] px-3 py-2 bg-[rgba(255,255,255,0.02)]">
+    <div className="rounded-lg border border-[rgba(102,192,244,0.08)] px-3 py-2 bg-[rgba(42,71,94,0.2)]">
       <div className="flex items-center justify-between mb-1.5">
-        <span className="text-[8px] uppercase tracking-wider text-[rgba(255,255,255,0.3)]">Nivel de riesgo</span>
+        <span className="text-[8px] uppercase tracking-wider text-[rgba(143,152,160,0.9)]">Nivel de riesgo</span>
         <span className="text-[10px] font-bold" style={{ color: current.color }}>{current.label}</span>
       </div>
       <div className="flex gap-1">
         {levels.map((l) => (
           <div key={l.label} className="flex-1 h-1 rounded-full transition-all duration-500"
-            style={{ background: l.label === current.label ? l.color : 'rgba(255,255,255,0.07)' }} />
+            style={{ background: l.label === current.label ? l.color : 'rgba(102,192,244,0.1)' }} />
         ))}
       </div>
     </div>
@@ -201,13 +201,13 @@ function ResultRow({ result, index, apiKey, aiCache, aiLoading, onAnalyze }) {
       initial={{ opacity: 0, y: 4 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.02 }}
-      className="border-b border-[rgba(255,255,255,0.05)] last:border-0">
+      className="border-b border-[rgba(102,192,244,0.07)] last:border-0">
 
       {/* ── Collapsed header ── */}
       <button onClick={toggle}
         className="w-full flex items-center gap-3 px-4 py-3 hover:bg-[rgba(255,255,255,0.025)] transition-colors text-left group">
         <motion.span animate={{ rotate: open ? 90 : 0 }} transition={{ duration: 0.18 }} className="flex-shrink-0">
-          <ChevronRight className="w-3.5 h-3.5 text-[rgba(255,255,255,0.2)] group-hover:text-[rgba(255,255,255,0.5)]" />
+          <ChevronRight className="w-3.5 h-3.5 text-[rgba(143,152,160,0.6)] group-hover:text-[rgba(198,212,223,0.8)]" />
         </motion.span>
 
         <span className="text-base w-5 text-center flex-shrink-0">{cfg.emoji}</span>
@@ -219,21 +219,21 @@ function ResultRow({ result, index, apiKey, aiCache, aiLoading, onAnalyze }) {
               style={{ background: `${cat?.color || '#fff'}15`, color: cat?.color || '#fff' }}>
               {cat?.name || result.category}
             </span>
-            <span className="text-[9px] text-[rgba(255,255,255,0.25)] font-mono">
+            <span className="text-[9px] text-[rgba(143,152,160,0.7)] font-mono">
               {new Date(result.timestamp).toLocaleTimeString('es-ES')}
             </span>
             {durationMs != null && (
-              <span className="text-[9px] text-[rgba(255,255,255,0.2)] font-mono">
+              <span className="text-[9px] text-[rgba(143,152,160,0.6)] font-mono">
                 {fmtDuration(durationMs)}
               </span>
             )}
             {commands.length > 0 && (
-              <span className="text-[8px] flex items-center gap-0.5 text-[rgba(100,210,255,0.5)]">
+              <span className="text-[8px] flex items-center gap-0.5 text-[rgba(102,192,244,0.5)]">
                 <Terminal className="w-2.5 h-2.5" />{commands.length} cmd
               </span>
             )}
             {aiCache[result.id] && aiCache[result.id] !== '_no_key_' && (
-              <span className="text-[8px] flex items-center gap-0.5 text-[rgba(0,255,136,0.6)]">
+              <span className="text-[8px] flex items-center gap-0.5 text-[rgba(87,203,222,0.6)]">
                 <Sparkles className="w-2.5 h-2.5" />IA
               </span>
             )}
@@ -242,7 +242,7 @@ function ResultRow({ result, index, apiKey, aiCache, aiLoading, onAnalyze }) {
 
         {/* Score bar */}
         <div className="hidden sm:flex items-center gap-2 w-28 flex-shrink-0">
-          <div className="flex-1 h-1 rounded-full bg-[rgba(255,255,255,0.06)] overflow-hidden">
+          <div className="flex-1 h-1 rounded-full bg-[rgba(102,192,244,0.08)] overflow-hidden">
             <motion.div className="h-full rounded-full" style={{ background: cfg.color }}
               initial={{ width: 0 }}
               animate={{ width: `${result.score ?? 0}%` }}
@@ -269,27 +269,27 @@ function ResultRow({ result, index, apiKey, aiCache, aiLoading, onAnalyze }) {
             transition={{ duration: 0.22, ease: 'easeInOut' }}
             style={{ overflow: 'hidden' }}>
 
-            <div className="mx-4 mb-4 mt-1 space-y-3 border-t border-[rgba(255,255,255,0.05)] pt-3">
+            <div className="mx-4 mb-4 mt-1 space-y-3 border-t border-[rgba(102,192,244,0.07)] pt-3">
 
               {/* Row 1: metrics + AI */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
 
                 {/* Left: metrics */}
                 <div className="space-y-2.5">
-                  <p className="text-[8px] uppercase tracking-widest text-[rgba(255,255,255,0.3)] font-semibold">
+                  <p className="text-[8px] uppercase tracking-widest text-[rgba(143,152,160,0.9)] font-semibold">
                     Detalles técnicos
                   </p>
                   <div className="grid grid-cols-2 gap-1.5">
                     {[
                       ['Estado',    cfg.label,                     cfg.color],
                       ['Score',     result.score != null ? `${result.score}/100` : 'N/A', cfg.color],
-                      ['Categoría', cat?.name || result.category,  cat?.color || 'rgba(255,255,255,0.6)'],
-                      ['ID',        result.id,                     'rgba(255,255,255,0.35)'],
-                      ['Duración',  fmtDuration(durationMs),       'rgba(255,255,255,0.5)'],
-                      ['Hora',      new Date(result.timestamp).toLocaleTimeString('es-ES'), 'rgba(255,255,255,0.35)'],
+                      ['Categoría', cat?.name || result.category,  cat?.color || '#c6d4df'],
+                      ['ID',        result.id,                     'rgba(198,212,223,0.6)'],
+                      ['Duración',  fmtDuration(durationMs),       'rgba(198,212,223,0.8)'],
+                      ['Hora',      new Date(result.timestamp).toLocaleTimeString('es-ES'), 'rgba(198,212,223,0.6)'],
                     ].map(([lbl, val, col]) => (
-                      <div key={lbl} className="rounded-lg px-2.5 py-2 border border-[rgba(255,255,255,0.06)] bg-[rgba(255,255,255,0.02)]">
-                        <div className="text-[8px] uppercase tracking-wider text-[rgba(255,255,255,0.25)] mb-0.5">{lbl}</div>
+                      <div key={lbl} className="rounded-lg px-2.5 py-2 border border-[rgba(102,192,244,0.08)] bg-[rgba(42,71,94,0.2)]">
+                        <div className="text-[8px] uppercase tracking-wider text-[rgba(143,152,160,0.7)] mb-0.5">{lbl}</div>
                         <div className="text-[11px] font-mono font-semibold truncate" style={{ color: col }}>{val}</div>
                       </div>
                     ))}
@@ -299,24 +299,24 @@ function ResultRow({ result, index, apiKey, aiCache, aiLoading, onAnalyze }) {
 
                 {/* Right: AI */}
                 <div className="space-y-2.5">
-                  <p className="text-[8px] uppercase tracking-widest text-[rgba(255,255,255,0.3)] font-semibold flex items-center gap-1.5">
-                    <Sparkles className="w-3 h-3 text-[rgba(0,255,136,0.6)]" />
+                  <p className="text-[8px] uppercase tracking-widest text-[rgba(143,152,160,0.9)] font-semibold flex items-center gap-1.5">
+                    <Sparkles className="w-3 h-3 text-[rgba(87,203,222,0.6)]" />
                     Análisis IA
                   </p>
                   <div className="rounded-xl border p-3.5 min-h-[90px] flex items-start"
-                    style={{ borderColor: 'rgba(0,255,136,0.12)', background: 'rgba(0,255,136,0.025)' }}>
+                    style={{ borderColor: 'rgba(87,203,222,0.12)', background: 'rgba(87,203,222,0.025)' }}>
                     {aiLoading[result.id] ? (
                       <div className="flex items-center gap-2.5">
-                        <Loader2 className="w-4 h-4 animate-spin flex-shrink-0 text-[#00ff88]" />
+                        <Loader2 className="w-4 h-4 animate-spin flex-shrink-0 text-[#66c0f4]" />
                         <div>
-                          <p className="text-xs text-[rgba(255,255,255,0.5)]">Analizando resultado...</p>
-                          <p className="text-[9px] text-[rgba(255,255,255,0.25)] mt-0.5">Consultando IA (Groq)</p>
+                          <p className="text-xs text-[rgba(198,212,223,0.8)]">Analizando resultado...</p>
+                          <p className="text-[9px] text-[rgba(143,152,160,0.7)] mt-0.5">Consultando IA (Groq)</p>
                         </div>
                       </div>
                     ) : aiCache[result.id] ? (
                       <AIText text={aiCache[result.id]} />
                     ) : (
-                      <p className="text-xs text-[rgba(255,255,255,0.25)]">Generando análisis...</p>
+                      <p className="text-xs text-[rgba(143,152,160,0.7)]">Generando análisis...</p>
                     )}
                   </div>
                 </div>
@@ -325,26 +325,26 @@ function ResultRow({ result, index, apiKey, aiCache, aiLoading, onAnalyze }) {
               {/* Row 2: Commands used */}
               {commands.length > 0 && (
                 <div className="space-y-2">
-                  <p className="text-[8px] uppercase tracking-widest text-[rgba(255,255,255,0.3)] font-semibold flex items-center gap-1.5">
-                    <Terminal className="w-3 h-3 text-[rgba(100,210,255,0.6)]" />
+                  <p className="text-[8px] uppercase tracking-widest text-[rgba(143,152,160,0.9)] font-semibold flex items-center gap-1.5">
+                    <Terminal className="w-3 h-3 text-[rgba(102,192,244,0.6)]" />
                     Comandos ejecutados ({commands.length})
                   </p>
                   <div className="space-y-1.5">
                     {commands.map((cmd, ci) => (
-                      <div key={ci} className="rounded-lg border border-[rgba(100,210,255,0.1)] bg-[rgba(0,0,0,0.3)] overflow-hidden">
+                      <div key={ci} className="rounded-lg border border-[rgba(102,192,244,0.1)] bg-[rgba(23,26,33,0.3)] overflow-hidden">
                         {/* Command line */}
-                        <div className="flex items-start gap-2 px-3 py-2 border-b border-[rgba(255,255,255,0.05)]">
-                          <span className="text-[rgba(100,210,255,0.5)] font-mono text-[10px] mt-0.5 flex-shrink-0">$</span>
-                          <code className="text-[10px] font-mono text-[rgba(100,210,255,0.9)] break-all leading-relaxed flex-1">{cmd}</code>
+                        <div className="flex items-start gap-2 px-3 py-2 border-b border-[rgba(102,192,244,0.07)]">
+                          <span className="text-[rgba(102,192,244,0.5)] font-mono text-[10px] mt-0.5 flex-shrink-0">$</span>
+                          <code className="text-[10px] font-mono text-[rgba(102,192,244,0.9)] break-all leading-relaxed flex-1">{cmd}</code>
                         </div>
                         {/* Flags breakdown */}
                         <div className="px-3 py-2 space-y-1.5">
-                          <p className="text-[9px] text-[rgba(255,255,255,0.35)] italic">{explainCommand(cmd)}</p>
+                          <p className="text-[9px] text-[rgba(198,212,223,0.6)] italic">{explainCommand(cmd)}</p>
                           {parseFlags(cmd).length > 0 && (
                             <div className="flex flex-wrap gap-1 mt-1">
                               {parseFlags(cmd).map((flag, fi) => (
                                 <span key={fi} className="text-[8px] px-1.5 py-0.5 rounded font-mono"
-                                  style={{ background: 'rgba(100,210,255,0.08)', color: 'rgba(100,210,255,0.7)', border: '1px solid rgba(100,210,255,0.15)' }}>
+                                  style={{ background: 'rgba(102,192,244,0.08)', color: 'rgba(102,192,244,0.7)', border: '1px solid rgba(102,192,244,0.15)' }}>
                                   {flag}
                                 </span>
                               ))}
@@ -361,7 +361,7 @@ function ResultRow({ result, index, apiKey, aiCache, aiLoading, onAnalyze }) {
               {rawOutput && (
                 <div className="space-y-2">
                   <button onClick={() => setRawOpen(o => !o)}
-                    className="text-[8px] uppercase tracking-widest text-[rgba(255,255,255,0.3)] font-semibold flex items-center gap-1.5 hover:text-[rgba(255,255,255,0.6)] transition-colors">
+                    className="text-[8px] uppercase tracking-widest text-[rgba(143,152,160,0.9)] font-semibold flex items-center gap-1.5 hover:text-[#c6d4df] transition-colors">
                     <FileText className="w-3 h-3" />
                     Salida completa del comando
                     <ChevronRight className={`w-3 h-3 transition-transform ${rawOpen ? 'rotate-90' : ''}`} />
@@ -373,7 +373,7 @@ function ResultRow({ result, index, apiKey, aiCache, aiLoading, onAnalyze }) {
                         animate={{ height: 'auto', opacity: 1 }}
                         exit={{ height: 0, opacity: 0 }}
                         style={{ overflow: 'hidden' }}>
-                        <div className="rounded-lg border border-[rgba(255,255,255,0.07)] bg-[rgba(0,0,0,0.4)] max-h-64 overflow-y-auto">
+                        <div className="rounded-lg border border-[rgba(102,192,244,0.1)] bg-[rgba(23,26,33,0.4)] max-h-64 overflow-y-auto">
                           <pre className="p-3 text-[9px] font-mono text-[rgba(255,255,255,0.45)] whitespace-pre-wrap leading-relaxed">
                             {rawOutput}
                           </pre>
@@ -387,11 +387,11 @@ function ResultRow({ result, index, apiKey, aiCache, aiLoading, onAnalyze }) {
               {/* Row 4: Module data */}
               {Object.keys(details).length > 0 && (
                 <div className="space-y-1.5">
-                  <p className="text-[8px] uppercase tracking-widest text-[rgba(255,255,255,0.3)] font-semibold">
+                  <p className="text-[8px] uppercase tracking-widest text-[rgba(143,152,160,0.9)] font-semibold">
                     Datos del módulo
                   </p>
-                  <div className="rounded-lg border border-[rgba(255,255,255,0.06)] bg-[rgba(0,0,0,0.25)] max-h-36 overflow-y-auto">
-                    <pre className="p-3 text-[9px] font-mono text-[rgba(255,255,255,0.4)] whitespace-pre-wrap leading-relaxed">
+                  <div className="rounded-lg border border-[rgba(102,192,244,0.08)] bg-[rgba(23,26,33,0.25)] max-h-36 overflow-y-auto">
+                    <pre className="p-3 text-[9px] font-mono text-[rgba(198,212,223,0.7)] whitespace-pre-wrap leading-relaxed">
                       {JSON.stringify(details, null, 2)}
                     </pre>
                   </div>
@@ -431,8 +431,8 @@ export function Results({ results, globalScore, apiKey, target = '' }) {
       <div className="h-full flex items-center justify-center">
         <div className="text-center">
           <div className="text-5xl mb-4">📊</div>
-          <p className="text-sm text-[rgba(255,255,255,0.4)]">Sin resultados todavía</p>
-          <p className="text-xs text-[rgba(255,255,255,0.2)] mt-1">Ejecuta un scan para ver los resultados aquí</p>
+          <p className="text-sm text-[rgba(198,212,223,0.7)]">Sin resultados todavía</p>
+          <p className="text-xs text-[rgba(143,152,160,0.6)] mt-1">Ejecuta un scan para ver los resultados aquí</p>
         </div>
       </div>
     );
@@ -449,13 +449,13 @@ export function Results({ results, globalScore, apiKey, target = '' }) {
 
         {/* Summary */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
-          <div className="rounded-xl border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.02)] p-5 flex flex-col items-center gap-3">
+          <div className="rounded-xl border border-[rgba(102,192,244,0.1)] bg-[rgba(42,71,94,0.2)] p-5 flex flex-col items-center gap-3">
             <ScoreGauge score={globalScore} />
             <div className="text-center">
               <div className="font-semibold text-sm" style={{ color: getScoreColor(globalScore) }}>
                 {getScoreLabel(globalScore)}
               </div>
-              <div className="text-[10px] text-[rgba(255,255,255,0.3)] mt-0.5">
+              <div className="text-[10px] text-[rgba(143,152,160,0.9)] mt-0.5">
                 {results.length} módulos evaluados
               </div>
             </div>
@@ -474,7 +474,7 @@ export function Results({ results, globalScore, apiKey, target = '' }) {
                   }}>
                   <span className="text-xl">{cfg.emoji}</span>
                   <span className="text-xl font-bold leading-none" style={{ color: cfg.color }}>{count}</span>
-                  <span className="text-[8px] text-[rgba(255,255,255,0.4)] uppercase tracking-wider">{cfg.label}</span>
+                  <span className="text-[8px] text-[rgba(198,212,223,0.7)] uppercase tracking-wider">{cfg.label}</span>
                 </button>
               );
             })}
@@ -483,7 +483,7 @@ export function Results({ results, globalScore, apiKey, target = '' }) {
 
         {/* Filters */}
         <div className="flex items-center gap-2 flex-wrap">
-          <Filter className="w-3 h-3 text-[rgba(255,255,255,0.25)]" />
+          <Filter className="w-3 h-3 text-[rgba(143,152,160,0.7)]" />
           {['ALL', ...categories].map(c => {
             const active = catFilter === c;
             const color  = CATEGORIES[c]?.color;
@@ -491,46 +491,46 @@ export function Results({ results, globalScore, apiKey, target = '' }) {
               <button key={c} onClick={() => setCatFilter(c)}
                 className="text-[9px] px-2 py-1 rounded-lg border transition-all"
                 style={{
-                  background:  active ? `${color||'#fff'}15` : 'rgba(255,255,255,0.03)',
-                  borderColor: active ? `${color||'#fff'}35` : 'rgba(255,255,255,0.07)',
-                  color:       active ? (color || '#fff') : 'rgba(255,255,255,0.35)',
+                  background:  active ? `${color||'#fff'}15` : 'rgba(42,71,94,0.3)',
+                  borderColor: active ? `${color||'#fff'}35` : 'rgba(102,192,244,0.1)',
+                  color:       active ? (color || '#fff') : 'rgba(198,212,223,0.6)',
                 }}>
                 {c === 'ALL' ? 'Todos' : CATEGORIES[c]?.name || c}
               </button>
             );
           })}
           <div className="ml-auto flex items-center gap-1">
-            <SortAsc className="w-3 h-3 text-[rgba(255,255,255,0.25)]" />
+            <SortAsc className="w-3 h-3 text-[rgba(143,152,160,0.7)]" />
             {[['time','Tiempo'],['score','Score'],['status','Estado']].map(([val,lbl]) => (
               <button key={val} onClick={() => setSortBy(val)}
                 className="text-[9px] px-2 py-1 rounded-lg border transition-all"
                 style={{
-                  background:  sortBy === val ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.02)',
-                  borderColor: sortBy === val ? 'rgba(255,255,255,0.18)' : 'rgba(255,255,255,0.06)',
-                  color:       sortBy === val ? 'white' : 'rgba(255,255,255,0.3)',
+                  background:  sortBy === val ? 'rgba(102,192,244,0.1)' : 'rgba(42,71,94,0.2)',
+                  borderColor: sortBy === val ? 'rgba(255,255,255,0.18)' : 'rgba(102,192,244,0.08)',
+                  color:       sortBy === val ? 'white' : 'rgba(143,152,160,0.9)',
                 }}>
                 {lbl}
               </button>
             ))}
           </div>
-          <span className="text-[9px] text-[rgba(255,255,255,0.2)] font-mono">
+          <span className="text-[9px] text-[rgba(143,152,160,0.6)] font-mono">
             {visible.length}/{results.length}
           </span>
         </div>
 
         {/* List */}
-        <div className="rounded-xl border border-[rgba(255,255,255,0.08)] overflow-hidden bg-[rgba(255,255,255,0.01)]">
-          <div className="px-4 py-2.5 border-b border-[rgba(255,255,255,0.06)] bg-[rgba(255,255,255,0.02)] flex items-center justify-between">
-            <span className="text-[9px] uppercase tracking-widest text-[rgba(255,255,255,0.4)] font-semibold">
+        <div className="rounded-xl border border-[rgba(102,192,244,0.1)] overflow-hidden bg-[rgba(255,255,255,0.01)]">
+          <div className="px-4 py-2.5 border-b border-[rgba(102,192,244,0.08)] bg-[rgba(42,71,94,0.2)] flex items-center justify-between">
+            <span className="text-[9px] uppercase tracking-widest text-[rgba(198,212,223,0.7)] font-semibold">
               Resultados — click para expandir
             </span>
-            <span className="text-[9px] flex items-center gap-1 text-[rgba(255,255,255,0.25)]">
-              <Sparkles className="w-2.5 h-2.5 text-[rgba(0,255,136,0.5)]" />
+            <span className="text-[9px] flex items-center gap-1 text-[rgba(143,152,160,0.7)]">
+              <Sparkles className="w-2.5 h-2.5 text-[rgba(87,203,222,0.5)]" />
               Análisis IA · Comandos · Output
             </span>
           </div>
           {visible.length === 0
-            ? <div className="py-10 text-center text-[rgba(255,255,255,0.2)] text-xs">Sin resultados con los filtros aplicados</div>
+            ? <div className="py-10 text-center text-[rgba(143,152,160,0.6)] text-xs">Sin resultados con los filtros aplicados</div>
             : visible.map((r, i) => (
               <ResultRow key={r.id} result={r} index={i}
                 apiKey={apiKey}

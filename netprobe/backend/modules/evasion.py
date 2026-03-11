@@ -49,7 +49,7 @@ async def _ttl_manip(target, intensity, log_fn):
 
     ttl = TTL_VALUES.get(intensity, "64")
     cmd = f"nmap --ttl {ttl} -sS -p 22,80,443,8080,8443 -T3 {target}"
-    out, err, rc = await raw_exec(cmd, log_fn, "ttl_manip", timeout=60)
+    out, err, rc = await raw_exec(cmd, log_fn, "ttl_manip", timeout=120)
 
     open_ports = re.findall(r"(\d+)/tcp\s+open\s*(\S*)", out)
     filtered   = re.findall(r"(\d+)/tcp\s+filtered", out)
@@ -72,7 +72,7 @@ async def _decoy_scan(target, intensity, log_fn):
 
     decoys = DECOYS.get(intensity, "20")
     cmd    = f"nmap -D RND:{decoys},ME -sS -p 22,80,443,3389,8080 -T3 {target}"
-    out, err, rc = await raw_exec(cmd, log_fn, "decoy_scan", timeout=90)
+    out, err, rc = await raw_exec(cmd, log_fn, "decoy_scan", timeout=180)
 
     open_ports = re.findall(r"(\d+)/tcp\s+open\s*(\S*)", out)
     if open_ports:

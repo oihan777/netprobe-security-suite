@@ -28,11 +28,11 @@ export function ProfileSelector({ onApply, currentModules = [], disabled = false
         disabled={disabled}
         className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs transition-all disabled:opacity-40"
         style={{
-          background: open ? 'rgba(0,255,136,0.08)' : 'rgba(255,255,255,0.04)',
-          border: `1px solid ${open ? 'rgba(0,255,136,0.3)' : 'rgba(255,255,255,0.08)'}`,
-          color: 'rgba(255,255,255,0.7)',
+          background: open ? 'rgba(87,203,222,0.08)' : 'rgba(42,71,94,0.4)',
+          border: `1px solid ${open ? 'rgba(87,203,222,0.3)' : 'rgba(102,192,244,0.1)'}`,
+          color: '#c6d4df',
         }}>
-        <Zap className="w-3.5 h-3.5 text-[#00ff88] flex-shrink-0" />
+        <Zap className="w-3.5 h-3.5 text-[#66c0f4] flex-shrink-0" />
         <span className="flex-1 text-left truncate">
           {active ? active.name : 'Perfiles de escaneo'}
         </span>
@@ -57,11 +57,11 @@ export function ProfileSelector({ onApply, currentModules = [], disabled = false
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: -6, scale: 0.97 }}
               transition={{ duration: 0.15 }}
-              className="absolute left-0 right-0 top-full mt-1 z-50 rounded-xl border border-[rgba(255,255,255,0.1)] overflow-hidden shadow-2xl"
-              style={{ background: '#111116' }}>
+              className="absolute left-0 right-0 top-full mt-1 z-50 rounded-xl border border-[rgba(102,192,244,0.15)] overflow-hidden shadow-2xl"
+              style={{ background: '#1b2838' }}>
 
-              <div className="p-2 border-b border-[rgba(255,255,255,0.06)]">
-                <p className="text-[9px] uppercase tracking-widest text-[rgba(255,255,255,0.3)] font-semibold px-1">
+              <div className="p-2 border-b border-[rgba(102,192,244,0.08)]">
+                <p className="text-[9px] uppercase tracking-widest text-[rgba(143,152,160,0.9)] font-semibold px-1">
                   Selecciona un perfil
                 </p>
               </div>
@@ -80,7 +80,7 @@ export function ProfileSelector({ onApply, currentModules = [], disabled = false
 
                       <button
                         onClick={() => apply(profile)}
-                        className="w-full flex items-center gap-3 px-3 py-2.5 text-left transition-colors hover:bg-[rgba(255,255,255,0.05)]"
+                        className="w-full flex items-center gap-3 px-3 py-2.5 text-left transition-colors hover:bg-[rgba(102,192,244,0.07)]"
                         style={{ background: isActive ? `${profile.color}10` : undefined }}>
 
                         {/* Left color bar */}
@@ -98,12 +98,12 @@ export function ProfileSelector({ onApply, currentModules = [], disabled = false
                             <span className="text-[9px] font-semibold" style={{ color: risk.color }}>
                               {risk.label}
                             </span>
-                            <span className="text-[rgba(255,255,255,0.2)] text-[9px]">·</span>
-                            <span className="text-[9px] text-[rgba(255,255,255,0.35)]">
+                            <span className="text-[rgba(143,152,160,0.6)] text-[9px]">·</span>
+                            <span className="text-[9px] text-[rgba(198,212,223,0.6)]">
                               {profile.modules.length} módulos
                             </span>
-                            <span className="text-[rgba(255,255,255,0.2)] text-[9px]">·</span>
-                            <span className="text-[9px] text-[rgba(255,255,255,0.35)]">
+                            <span className="text-[rgba(143,152,160,0.6)] text-[9px]">·</span>
+                            <span className="text-[9px] text-[rgba(198,212,223,0.6)]">
                               int. {profile.intensity}
                             </span>
                           </div>

@@ -1,9 +1,62 @@
+# Python
+venv/
 __pycache__/
 *.pyc
-.env
-venv/
-node_modules/
+*.pyo
+*.pyd
+.Python
+*.egg-info/
 dist/
-.vite/
-backend/scheduler.db
+build/
+.eggs/
+
+# Node.js / Frontend
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+
+# Logs
+logs/
 *.log
+
+# Base de datos
+*.db
+*.sqlite
+*.sqlite3
+
+# Secretos y configuración local
+.env
+.env.local
+*.key
+api_keys.txt
+
+# Sistema operativo
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Wordlists (demasiado pesadas para git)
+/opt/
+/usr/share/wordlists/
+
+# Outputs temporales
+/tmp/np_*
+/tmp/hydra_*
+/tmp/sqlmap-*
+outputs/
+
+# Reportes generados
+reports/
+*.pdf
+

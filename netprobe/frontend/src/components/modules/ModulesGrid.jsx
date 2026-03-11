@@ -18,8 +18,8 @@ export function ModulesGrid({ selectedModules, setSelectedModules, results }) {
         <div key={key}>
           <div className="flex items-center gap-2 mb-3">
             <div className="w-1 h-4 rounded-full" style={{ background: cat.color }} />
-            <h3 className="text-xs font-semibold text-[rgba(255,255,255,0.6)] uppercase tracking-wider">{cat.name}</h3>
-            <span className="text-[10px] text-[rgba(255,255,255,0.3)]">{modules.length} módulos</span>
+            <h3 className="text-xs font-semibold text-[#c6d4df] uppercase tracking-wider">{cat.name}</h3>
+            <span className="text-[10px] text-[rgba(143,152,160,0.9)]">{modules.length} módulos</span>
           </div>
           <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2">
             {modules.map(m => {
@@ -29,7 +29,7 @@ export function ModulesGrid({ selectedModules, setSelectedModules, results }) {
               return (
                 <motion.button key={m.id} onClick={() => toggle(m.id)}
                   whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
-                  className={`relative p-3 rounded-xl text-left transition-all border ${sel && !result ? 'border-[rgba(0,255,136,0.3)] bg-[rgba(0,255,136,0.06)]' : result ? 'border-opacity-30' : 'border-[rgba(255,255,255,0.07)] bg-[rgba(255,255,255,0.03)] hover:bg-[rgba(255,255,255,0.06)] hover:border-[rgba(255,255,255,0.12)]'}`}
+                  className={`relative p-3 rounded-xl text-left transition-all border ${sel && !result ? 'border-[rgba(87,203,222,0.3)] bg-[rgba(87,203,222,0.06)]' : result ? 'border-opacity-30' : 'border-[rgba(102,192,244,0.1)] bg-[rgba(42,71,94,0.3)] hover:bg-[rgba(102,192,244,0.08)] hover:border-[rgba(143,152,160,0.4)]'}`}
                   style={result ? { borderColor:`${sc?.color}40`, background:`${sc?.color}08` } : {}}>
 
                   {/* Status indicator */}
@@ -40,8 +40,8 @@ export function ModulesGrid({ selectedModules, setSelectedModules, results }) {
                     </div>
                   ) : sel ? (
                     <div className="flex items-center justify-between mb-2">
-                      <CheckCircle2 className="w-3 h-3 text-[#00ff88]" />
-                      <span className="text-[9px] text-[#00ff88]">SEL</span>
+                      <CheckCircle2 className="w-3 h-3 text-[#66c0f4]" />
+                      <span className="text-[9px] text-[#66c0f4]">SEL</span>
                     </div>
                   ) : (
                     <div className="flex items-center justify-between mb-2">
@@ -51,7 +51,7 @@ export function ModulesGrid({ selectedModules, setSelectedModules, results }) {
                   )}
 
                   <p className="text-xs font-medium text-white leading-snug mb-1">{m.name}</p>
-                  <p className="text-[10px] text-[rgba(255,255,255,0.4)] leading-snug line-clamp-2">{m.description}</p>
+                  <p className="text-[10px] text-[rgba(198,212,223,0.7)] leading-snug line-clamp-2">{m.description}</p>
 
                   {/* Category dot */}
                   <div className="absolute top-2 right-2 w-1.5 h-1.5 rounded-full opacity-60" style={{ background: CATEGORIES[m.category]?.color }} />

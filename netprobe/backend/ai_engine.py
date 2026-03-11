@@ -36,15 +36,10 @@ QUICK_PROMPTS = [
 ]
 
 GROQ_MODELS = [
-    {"id": "llama-3.3-70b-versatile",                    "label": "Llama 3.3 70B (recomendado)"},
-    {"id": "meta-llama/llama-4-maverick-17b-128e-instruct","label": "Llama 4 Maverick 17B"},
-    {"id": "meta-llama/llama-4-scout-17b-16e-instruct",   "label": "Llama 4 Scout 17B"},
-    {"id": "moonshotai/kimi-k2-instruct",                 "label": "Kimi K2"},
-    {"id": "qwen/qwen3-32b",                              "label": "Qwen3 32B"},
-    {"id": "openai/gpt-oss-120b",                         "label": "GPT-OSS 120B"},
-    {"id": "openai/gpt-oss-20b",                          "label": "GPT-OSS 20B"},
-    {"id": "groq/compound",                               "label": "Groq Compound"},
-    {"id": "llama-3.1-8b-instant",                        "label": "Llama 3.1 8B (rápido)"},
+    {"id": "llama-3.3-70b-versatile",  "label": "Llama 3.3 70B (recomendado)"},
+    {"id": "llama-3.1-8b-instant",     "label": "Llama 3.1 8B (ultrarrápido)"},
+    {"id": "mixtral-8x7b-32768",       "label": "Mixtral 8x7B (contexto largo)"},
+    {"id": "gemma2-9b-it",             "label": "Gemma 2 9B"},
 ]
 
 
@@ -71,8 +66,8 @@ def build_context(scan_context):
             parts.append(f"BLOQUEADOS ({len(blocked)}): " + ", ".join(r.get("module_id","") for r in blocked))
         for r in (passed + partial)[:8]:
             parts.append(f"- {r.get('module_id')} -> {r.get('status')} | {json.dumps(r.get('data',{}), ensure_ascii=False)[:150]}")
-    if not parts:
-        parts.append("No hay resultados de escaneo disponibles aún.")
+    if not parts or (len(parts) <= 2 and not scan_context.get("results")):
+        return ""  # Return empty so we don't inject misleading context
     return "\n".join(parts)
 
 
@@ -195,6 +190,8 @@ def register_ai_routes(app):
         messages = [{"role": "system", "content": SYSTEM_PROMPT}]
         if context.strip():
             messages.append({"role": "system", "content": f"CONTEXTO DEL ESCANEO:\n{context}"})
+        else:
+            messages.append({"role": "system", "content": "IMPORTANTE: No hay ningún escaneo realizado todavía en este caso. NO inventes ni asumas resultados. Si el usuario pregunta por análisis de vulnerabilidades, indícale que primero debe ejecutar un scan desde el panel de módulos."})
         for h in req.history[-10:]:
             messages.append({"role": h["role"], "content": h["content"]})
         messages.append({"role": "user", "content": req.message})
@@ -224,6 +221,8 @@ def register_ai_routes(app):
             messages = [{"role": "system", "content": SYSTEM_PROMPT}]
             if context.strip():
                 messages.append({"role": "system", "content": f"CONTEXTO DEL ESCANEO:\n{context}"})
+            else:
+                messages.append({"role": "system", "content": "IMPORTANTE: No hay ningún escaneo realizado todavía en este caso. NO inventes ni asumas resultados. Si el usuario pregunta por análisis de vulnerabilidades, indícale que primero debe ejecutar un scan desde el panel de módulos."})
             for h in history[-10:]:
                 messages.append({"role": h["role"], "content": h["content"]})
             messages.append({"role": "user", "content": message})

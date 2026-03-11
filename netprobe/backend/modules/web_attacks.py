@@ -93,7 +93,7 @@ async def _sqli(target, intensity, log_fn):
         cmd = (f"python3 {sqlmap} -u 'http://{target}/?id=1' "
                f"--batch --level={level} --risk={risk} "
                f"--timeout=10 --retries=1 --output-dir=/tmp/sqlmap-{target.replace('.','_')}")
-        out, err, rc = await raw_exec(cmd, log_fn, "sqli", timeout=120)
+        out, err, rc = await raw_exec(cmd, log_fn, "sqli", timeout=300)
         full = out + err
 
         if re.search(r"is vulnerable|Parameter:.+injectable|sql injection", full, re.I):
@@ -134,7 +134,7 @@ async def _xss(target, intensity, log_fn):
     xsstrike = "/opt/xsstrike/xsstrike.py"
     if os.path.exists(xsstrike):
         cmd = f"python3 {xsstrike} -u 'http://{target}/?q=test' --timeout 10 --crawl"
-        out, err, rc = await raw_exec(cmd, log_fn, "xss", timeout=90)
+        out, err, rc = await raw_exec(cmd, log_fn, "xss", timeout=180)
         if re.search(r"vulnerable|XSS|payload working", out + err, re.I):
             return {"vulnerable": True, "tool": "xsstrike"}, "PASSED", 0
 

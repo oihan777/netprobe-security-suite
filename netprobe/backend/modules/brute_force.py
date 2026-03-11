@@ -16,19 +16,59 @@ MODULE_NAMES = {
     "smb_brute":  "SMB Auth Brute",
 }
 
-SECLISTS = "/opt/seclists"
-FALLBACK_USERS = "admin\nroot\nuser\ntest\nguest\nadministrator\noracle\nsa\npostgres\nmanager\noperator"
-FALLBACK_PASS  = "admin\npassword\n123456\nroot\ntest\n12345\nqwerty\nletmein\nchangeme\n1234\nadmin123\npass\nwelcome"
+SECLISTS    = "/opt/seclists"
+NP_WLDIR    = "/opt/netprobe-wordlists"
+ROCKYOU     = "/usr/share/wordlists/rockyou.txt"
 
-def _ensure_wordlists():
-    ulist = os.path.join(SECLISTS, "Usernames/top-usernames-shortlist.txt")
-    plist = os.path.join(SECLISTS, "Passwords/Common-Credentials/top-20-common-SSH-passwords.txt")
-    if not os.path.exists(ulist):
+FALLBACK_USERS = "admin\nroot\nuser\ntest\nguest\nadministrator\noracle\nsa\npostgres\nmanager\noperator\nftpuser\nwww-data\nservice\nbackup\npi\nubuntu\nanonymous\nnobody\n"
+FALLBACK_PASS  = "admin\npassword\n123456\nroot\ntest\n12345\nqwerty\nletmein\nchangeme\n1234\nadmin123\npass\nwelcome\nlogin\nmaster\ndragon\nmonkey\nshadow\npassword1\nfootball\n"
+
+def _find_file(*candidates):
+    for p in candidates:
+        if p and os.path.exists(p):
+            return p
+    return None
+
+def _ensure_wordlists(service="generic"):
+    # ── Usernames ────────────────────────────────────────────────
+    ulist = _find_file(
+        os.path.join(NP_WLDIR, "top-usernames.txt"),
+        os.path.join(SECLISTS, "Usernames/top-usernames-shortlist.txt"),
+        os.path.join(SECLISTS, "Usernames/Names/names.txt"),
+        "/usr/share/metasploit-framework/data/wordlists/unix_users.txt",
+    )
+    if not ulist:
         ulist = "/tmp/np_users.txt"
-        with open(ulist, "w") as f: f.write(FALLBACK_USERS)
-    if not os.path.exists(plist):
+        with open(ulist, "w") as f:
+            f.write(FALLBACK_USERS)
+
+    # ── Passwords: pick best list per service ────────────────────
+    if service == "ssh":
+        plist = _find_file(
+            os.path.join(NP_WLDIR, "ssh-passwords.txt"),
+            os.path.join(SECLISTS, "Passwords/Common-Credentials/top-20-common-SSH-passwords.txt"),
+            os.path.join(NP_WLDIR, "top-passwords.txt"),
+            ROCKYOU,
+        )
+    elif service in ("ftp", "smb"):
+        plist = _find_file(
+            os.path.join(NP_WLDIR, "top-passwords.txt"),
+            os.path.join(SECLISTS, "Passwords/Common-Credentials/10-million-password-list-top-1000.txt"),
+            ROCKYOU,
+        )
+    else:
+        plist = _find_file(
+            os.path.join(NP_WLDIR, "top-passwords.txt"),
+            os.path.join(SECLISTS, "Passwords/Common-Credentials/10-million-password-list-top-1000.txt"),
+            os.path.join(NP_WLDIR, "ssh-passwords.txt"),
+            ROCKYOU,
+        )
+
+    if not plist:
         plist = "/tmp/np_pass.txt"
-        with open(plist, "w") as f: f.write(FALLBACK_PASS)
+        with open(plist, "w") as f:
+            f.write(FALLBACK_PASS)
+
     return ulist, plist
 
 async def run_brute_force_module(module_id, target, intensity, duration, log_fn):
@@ -45,22 +85,31 @@ async def run_brute_force_module(module_id, target, intensity, duration, log_fn)
         await log_fn("WARN", "hydra no instalado: sudo apt install hydra", module_id)
         return {}, "ERROR", None
 
-    ulist, plist = _ensure_wordlists()
-    threads = {1:1, 2:2, 3:4, 4:8, 5:16}.get(intensity, 4)
     svc_map = {
         "ssh_brute": "ssh",
         "ftp_brute": "ftp",
-        "http_auth": f"http-get://{target}/",
+        "http_auth": "http",
         "smb_brute": "smb",
     }
     svc = svc_map.get(module_id, "ssh")
+    ulist, plist = _ensure_wordlists(svc)
+    plist_size = sum(1 for _ in open(plist)) if os.path.exists(plist) else 0
+    await log_fn("INFO", f"Wordlist: {os.path.basename(ulist)} users / {os.path.basename(plist)} ({plist_size} passwords)", module_id)
+
+    threads = {1:2, 2:4, 3:8, 4:16, 5:32}.get(intensity, 8)
+    # SSH: limit threads to avoid lockout
+    if svc == "ssh":
+        threads = min(threads, 4)
 
     if module_id == "http_auth":
-        cmd = f"hydra -L {ulist} -P {plist} -t {threads} -f {target} http-get /"
+        cmd = f"hydra -L {ulist} -P {plist} -t {threads} -f -o /tmp/hydra_{module_id}.txt {target} http-get /"
     else:
-        cmd = f"hydra -L {ulist} -P {plist} -t {threads} -f {svc}://{target}"
+        cmd = f"hydra -L {ulist} -P {plist} -t {threads} -f -o /tmp/hydra_{module_id}.txt {svc}://{target}"
 
-    out, err, rc = await raw_exec(cmd, log_fn, module_id, timeout=180)
+    # Timeout scales with password list size: min 3min, max 15min
+    timeout = max(180, min(900, plist_size * 2))
+    await log_fn("INFO", f"Timeout configurado: {timeout}s", module_id)
+    out, err, rc = await raw_exec(cmd, log_fn, module_id, timeout=timeout)
     full = out + err
 
     creds   = re.findall(r"login:\s*(\S+)\s+password:\s*(\S+)", full)

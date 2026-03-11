@@ -8,19 +8,19 @@ import {
 
 // ── Device config ─────────────────────────────────────────────────
 const DEV = {
-  'gateway':         { color: '#ff453a', glow: '#ff453a', emoji: '🛡️', label: 'Gateway/Router',   r: 26 },
-  'firewall-router': { color: '#ff453a', glow: '#ff453a', emoji: '🛡️', label: 'Firewall/Router',  r: 26 },
-  'linux-server':    { color: '#00ff88', glow: '#00ff88', emoji: '🖥️', label: 'Linux Server',     r: 20 },
-  'windows-server':  { color: '#0a84ff', glow: '#0a84ff', emoji: '🖥️', label: 'Windows Server',  r: 20 },
-  'windows':         { color: '#0a84ff', glow: '#0a84ff', emoji: '💻', label: 'Windows',          r: 18 },
-  'web-server':      { color: '#ff9f0a', glow: '#ff9f0a', emoji: '🌐', label: 'Web Server',       r: 20 },
-  'dns-server':      { color: '#bf5af2', glow: '#bf5af2', emoji: '🔍', label: 'DNS Server',       r: 18 },
-  'database':        { color: '#ffd60a', glow: '#ffd60a', emoji: '🗄️', label: 'Base de Datos',   r: 18 },
-  'mobile':          { color: '#30d158', glow: '#30d158', emoji: '📱', label: 'Móvil',            r: 16 },
-  'iot':             { color: '#64d2ff', glow: '#64d2ff', emoji: '📡', label: 'IoT',              r: 16 },
-  'host':            { color: '#636366', glow: '#8e8e93', emoji: '💻', label: 'Host',             r: 16 },
-  'scanner':         { color: '#00ff88', glow: '#00ff88', emoji: '🎯', label: 'Esta máquina',     r: 22 },
-  'unknown':         { color: '#3a3a3c', glow: '#48484a', emoji: '❓', label: 'Desconocido',      r: 15 },
+  'gateway':         { color: '#c94040', glow: '#c94040', emoji: '🛡️', label: 'Gateway/Router',   r: 26 },
+  'firewall-router': { color: '#c94040', glow: '#c94040', emoji: '🛡️', label: 'Firewall/Router',  r: 26 },
+  'linux-server':    { color: '#57cbde', glow: '#57cbde', emoji: '🖥️', label: 'Linux Server',     r: 20 },
+  'windows-server':  { color: '#66c0f4', glow: '#66c0f4', emoji: '🖥️', label: 'Windows Server',  r: 20 },
+  'windows':         { color: '#66c0f4', glow: '#66c0f4', emoji: '💻', label: 'Windows',          r: 18 },
+  'web-server':      { color: '#e4692a', glow: '#e4692a', emoji: '🌐', label: 'Web Server',       r: 20 },
+  'dns-server':      { color: '#9b59b6', glow: '#9b59b6', emoji: '🔍', label: 'DNS Server',       r: 18 },
+  'database':        { color: '#c8a951', glow: '#c8a951', emoji: '🗄️', label: 'Base de Datos',   r: 18 },
+  'mobile':          { color: '#5ba32b', glow: '#5ba32b', emoji: '📱', label: 'Móvil',            r: 16 },
+  'iot':             { color: '#66c0f4', glow: '#66c0f4', emoji: '📡', label: 'IoT',              r: 16 },
+  'host':            { color: '#8f98a0', glow: '#8f98a0', emoji: '💻', label: 'Host',             r: 16 },
+  'scanner':         { color: '#57cbde', glow: '#57cbde', emoji: '🎯', label: 'Esta máquina',     r: 22 },
+  'unknown':         { color: '#2a475e', glow: '#2a475e', emoji: '❓', label: 'Desconocido',      r: 15 },
 };
 const cfg = t => DEV[t] || DEV.unknown;
 
@@ -75,7 +75,7 @@ export function NetworkTopology({ onSetTarget }) {
 
     // Dot grid pattern
     const pat = defs.append('pattern').attr('id','dotgrid').attr('width',32).attr('height',32).attr('patternUnits','userSpaceOnUse');
-    pat.append('circle').attr('cx',1).attr('cy',1).attr('r',0.8).attr('fill','rgba(255,255,255,0.06)');
+    pat.append('circle').attr('cx',1).attr('cy',1).attr('r',0.8).attr('fill','rgba(102,192,244,0.08)');
 
     // Per-type glow filters
     Object.entries(DEV).forEach(([key, c]) => {
@@ -88,8 +88,8 @@ export function NetworkTopology({ onSetTarget }) {
 
     // Line gradient
     const lg = defs.append('linearGradient').attr('id','linkgrad').attr('gradientUnits','userSpaceOnUse');
-    lg.append('stop').attr('offset','0%').attr('stop-color','rgba(0,255,136,0.4)');
-    lg.append('stop').attr('offset','100%').attr('stop-color','rgba(10,132,255,0.2)');
+    lg.append('stop').attr('offset','0%').attr('stop-color','rgba(87,203,222,0.4)');
+    lg.append('stop').attr('offset','100%').attr('stop-color','rgba(102,192,244,0.2)');
 
     svg.append('rect').attr('width',w).attr('height',h).attr('fill','url(#dotgrid)');
 
@@ -106,7 +106,7 @@ export function NetworkTopology({ onSetTarget }) {
       .data(linkData).join('line')
       .attr('stroke', d => d.type === 'gateway'
         ? `${cfg(d.targetType || 'unknown').color}55`
-        : 'rgba(255,255,255,0.06)')
+        : 'rgba(102,192,244,0.08)')
       .attr('stroke-width', d => d.type === 'gateway' ? 1.5 : 0.8)
       .attr('stroke-dasharray', d => d.type === 'peer' ? '3,5' : null);
 
@@ -293,22 +293,22 @@ export function NetworkTopology({ onSetTarget }) {
   const empty = nodes.length === 0;
 
   return (
-    <div className="h-full flex flex-col" style={{ background:'#070709' }}>
+    <div className="h-full flex flex-col" style={{ background:'#171a21' }}>
 
       {/* ── Toolbar ─────────────────────────────────────────── */}
-      <div className="flex items-center gap-3 px-4 py-2 border-b border-[rgba(255,255,255,0.07)] flex-shrink-0"
+      <div className="flex items-center gap-3 px-4 py-2 border-b border-[rgba(102,192,244,0.1)] flex-shrink-0"
         style={{ background:'rgba(10,10,14,0.95)' }}>
 
         {/* Title */}
         <div className="flex items-center gap-2 mr-1">
-          <div className="w-6 h-6 rounded-md bg-[rgba(0,255,136,0.1)] border border-[rgba(0,255,136,0.2)] flex items-center justify-center text-xs">🕸️</div>
+          <div className="w-6 h-6 rounded-md bg-[rgba(87,203,222,0.1)] border border-[rgba(87,203,222,0.2)] flex items-center justify-center text-xs">🕸️</div>
           <span className="text-xs font-semibold text-white tracking-wide">Topología de Red</span>
         </div>
 
         {/* Network selector */}
         {networks.length > 0 && (
           <select value={selNet} onChange={e=>setSelNet(e.target.value)} disabled={scanning}
-            className="bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.1)] rounded-lg px-2.5 py-1 text-[11px] text-[rgba(255,255,255,0.65)] focus:outline-none focus:border-[rgba(0,255,136,0.4)] disabled:opacity-40"
+            className="bg-[rgba(102,192,244,0.07)] border border-[rgba(102,192,244,0.15)] rounded-lg px-2.5 py-1 text-[11px] text-[rgba(255,255,255,0.65)] focus:outline-none focus:border-[rgba(87,203,222,0.4)] disabled:opacity-40"
             style={{fontFamily:'monospace'}}>
             {networks.map(n => (
               <option key={n.cidr} value={n.cidr} style={{background:'#111'}}>
@@ -322,13 +322,13 @@ export function NetworkTopology({ onSetTarget }) {
         {scanning ? (
           <button onClick={stopScan}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all"
-            style={{background:'rgba(255,69,58,0.12)', border:'1px solid rgba(255,69,58,0.3)', color:'#ff453a'}}>
+            style={{background:'rgba(201,64,64,0.12)', border:'1px solid rgba(201,64,64,0.3)', color:'#c94040'}}>
             <StopCircle className="w-3.5 h-3.5"/> Detener
           </button>
         ) : (
           <button onClick={startScan} disabled={!selNet}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all disabled:opacity-40"
-            style={{background:'rgba(0,255,136,0.1)', border:'1px solid rgba(0,255,136,0.3)', color:'#00ff88'}}>
+            style={{background:'rgba(87,203,222,0.1)', border:'1px solid rgba(87,203,222,0.3)', color:'#57cbde'}}>
             <Scan className="w-3.5 h-3.5"/>
             {nodes.length > 0 ? 'Re-escanear' : 'Escanear red'}
           </button>
@@ -338,18 +338,18 @@ export function NetworkTopology({ onSetTarget }) {
         <div className="flex items-center gap-2 flex-1">
           {scanning && (
             <div className="flex items-center gap-2">
-              <div className="w-28 h-1 rounded-full overflow-hidden" style={{background:'rgba(255,255,255,0.06)'}}>
-                <motion.div className="h-full rounded-full" style={{background:'#00ff88'}}
+              <div className="w-28 h-1 rounded-full overflow-hidden" style={{background:'rgba(102,192,244,0.08)'}}>
+                <motion.div className="h-full rounded-full" style={{background:'#57cbde'}}
                   animate={{width:`${progress}%`}} transition={{duration:0.3}}/>
               </div>
-              <span className="text-[10px] font-mono" style={{color:'#00ff88'}}>{progress}%</span>
+              <span className="text-[10px] font-mono" style={{color:'#57cbde'}}>{progress}%</span>
             </div>
           )}
-          {status && <span className="text-[10px] font-mono text-[rgba(255,255,255,0.3)]">{status}</span>}
+          {status && <span className="text-[10px] font-mono text-[rgba(143,152,160,0.9)]">{status}</span>}
         </div>
 
         {/* Legend */}
-        <div className="hidden lg:flex items-center gap-3 border-l border-[rgba(255,255,255,0.07)] pl-3">
+        <div className="hidden lg:flex items-center gap-3 border-l border-[rgba(102,192,244,0.1)] pl-3">
           {[['gateway','🛡️','Router'],['linux-server','🖥️','Linux'],['windows','💻','Windows'],['web-server','🌐','Web'],['database','🗄️','DB'],['mobile','📱','Móvil'],['iot','📡','IoT']].map(([t,ic,lb])=>(
             <div key={t} className="flex items-center gap-1">
               <span className="text-[10px]">{ic}</span>
@@ -359,10 +359,10 @@ export function NetworkTopology({ onSetTarget }) {
         </div>
 
         {/* Zoom controls */}
-        <div className="flex items-center gap-0.5 border-l border-[rgba(255,255,255,0.07)] pl-2">
+        <div className="flex items-center gap-0.5 border-l border-[rgba(102,192,244,0.1)] pl-2">
           {[[ZoomIn,zoomIn],[ZoomOut,zoomOut],[Maximize2,fitView]].map(([Icon,fn],i)=>(
             <button key={i} onClick={fn}
-              className="p-1.5 rounded text-[rgba(255,255,255,0.3)] hover:text-white hover:bg-[rgba(255,255,255,0.07)] transition-all">
+              className="p-1.5 rounded text-[rgba(143,152,160,0.9)] hover:text-white hover:bg-[rgba(102,192,244,0.1)] transition-all">
               <Icon className="w-3.5 h-3.5"/>
             </button>
           ))}
@@ -378,7 +378,7 @@ export function NetworkTopology({ onSetTarget }) {
             {/* Animated web rings */}
             <div className="relative w-32 h-32 mb-8">
               {[0,1,2,3].map(i=>(
-                <div key={i} className="absolute inset-0 rounded-full border border-[rgba(0,255,136,0.12)]"
+                <div key={i} className="absolute inset-0 rounded-full border border-[rgba(87,203,222,0.12)]"
                   style={{
                     margin: `${i*14}px`,
                     animation:`spin ${8+i*3}s linear infinite`,
@@ -388,12 +388,12 @@ export function NetworkTopology({ onSetTarget }) {
               <div className="absolute inset-0 flex items-center justify-center text-4xl">🕸️</div>
             </div>
             <p className="text-white font-semibold text-sm mb-1.5">Topología de Red</p>
-            <p className="text-[rgba(255,255,255,0.35)] text-xs max-w-xs leading-relaxed mb-6">
+            <p className="text-[rgba(198,212,223,0.6)] text-xs max-w-xs leading-relaxed mb-6">
               Descubre todos los dispositivos conectados a tu red y visualiza sus conexiones en un mapa interactivo en tiempo real.
             </p>
             <button onClick={startScan} disabled={!selNet}
               className="flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-medium transition-all disabled:opacity-40"
-              style={{background:'rgba(0,255,136,0.1)', border:'1px solid rgba(0,255,136,0.35)', color:'#00ff88'}}>
+              style={{background:'rgba(87,203,222,0.1)', border:'1px solid rgba(87,203,222,0.35)', color:'#57cbde'}}>
               <Scan className="w-4 h-4"/> Iniciar escaneo de red
             </button>
           </div>
@@ -404,13 +404,13 @@ export function NetworkTopology({ onSetTarget }) {
           <div className="absolute inset-0 flex flex-col items-center justify-center">
             <div className="relative w-28 h-28 mb-6">
               {[0,1,2].map(i=>(
-                <div key={i} className="absolute inset-0 rounded-full border border-[rgba(0,255,136,0.25)]"
+                <div key={i} className="absolute inset-0 rounded-full border border-[rgba(87,203,222,0.25)]"
                   style={{animation:'ping 1.8s cubic-bezier(0,0,0.2,1) infinite', animationDelay:`${i*0.5}s`}}/>
               ))}
               <div className="absolute inset-0 flex items-center justify-center text-3xl">🎯</div>
             </div>
-            <p className="font-mono text-sm" style={{color:'#00ff88'}}>{status}</p>
-            <p className="font-mono text-[10px] text-[rgba(255,255,255,0.25)] mt-1">nmap -sn -T4 --min-parallelism 100 {selNet}</p>
+            <p className="font-mono text-sm" style={{color:'#57cbde'}}>{status}</p>
+            <p className="font-mono text-[10px] text-[rgba(143,152,160,0.7)] mt-1">nmap -sn -T4 --min-parallelism 100 {selNet}</p>
           </div>
         )}
 
@@ -429,7 +429,7 @@ export function NetworkTopology({ onSetTarget }) {
             exit={{y:'100%', opacity:0}}
             transition={{type:'spring', damping:28, stiffness:320}}
             className="flex-shrink-0 border-t"
-            style={{borderColor:'rgba(255,255,255,0.1)', background:'rgba(10,10,14,0.98)'}}>
+            style={{borderColor:'rgba(102,192,244,0.15)', background:'rgba(10,10,14,0.98)'}}>
             <HostPanel host={selected} onSetTarget={onSetTarget} onClose={()=>setSelected(null)}/>
           </motion.div>
         )}
@@ -495,7 +495,7 @@ function HostPanel({ host, onSetTarget, onClose }) {
               </span>
             ))}
             {host.open_ports.length > 10 && (
-              <span className="text-[9px] text-[rgba(255,255,255,0.3)] font-mono">+{host.open_ports.length-10}</span>
+              <span className="text-[9px] text-[rgba(143,152,160,0.9)] font-mono">+{host.open_ports.length-10}</span>
             )}
           </div>
         </div>
@@ -512,7 +512,7 @@ function HostPanel({ host, onSetTarget, onClose }) {
           Usar como Target
         </button>
         <button onClick={onClose}
-          className="flex items-center justify-center gap-1 px-4 py-1.5 rounded-xl text-[10px] text-[rgba(255,255,255,0.3)] hover:text-white border border-[rgba(255,255,255,0.08)] hover:border-[rgba(255,255,255,0.2)] transition-all">
+          className="flex items-center justify-center gap-1 px-4 py-1.5 rounded-xl text-[10px] text-[rgba(143,152,160,0.9)] hover:text-white border border-[rgba(102,192,244,0.1)] hover:border-[rgba(143,152,160,0.6)] transition-all">
           <X className="w-3 h-3"/> Cerrar
         </button>
       </div>

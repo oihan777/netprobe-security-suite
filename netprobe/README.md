@@ -1,41 +1,30 @@
-# NetProbe Security Suite v1.0
+# 🛡️ NetProbe Security Suite v1.0
 
-Herramienta profesional de pentesting y validacion de seguridad para redes locales.
+> Plataforma profesional de pentesting y análisis de seguridad para redes privadas.  
+> Interfaz moderna, IA integrada (Groq), 44+ módulos de ataque, threat modeling STRIDE y mucho más.
 
-## ADVERTENCIA LEGAL
+![NetProbe](https://img.shields.io/badge/version-1.0-blue) ![License](https://img.shields.io/badge/license-MIT-green) ![Python](https://img.shields.io/badge/python-3.10+-yellow) ![React](https://img.shields.io/badge/react-18-61dafb)
 
-USO EXCLUSIVO EN REDES PROPIAS O CON AUTORIZACION ESCRITA PREVIA.
-El uso no autorizado constituye un delito penal.
+---
 
-IPs permitidas (RFC1918): 192.168.0.0/16, 10.0.0.0/8, 172.16.0.0/12
+## ⚠️ Aviso Legal
 
-## Inicio Rapido
+**USO EXCLUSIVO EN REDES PROPIAS O CON AUTORIZACIÓN ESCRITA PREVIA.**  
+El uso de esta herramienta contra sistemas sin autorización explícita constituye un delito penal.  
+Solo funciona contra IPs privadas RFC1918: `192.168.x.x`, `10.x.x.x`, `172.16-31.x.x`
 
-    sudo bash install.sh
-    sudo ./start.sh
+---
 
-Frontend: http://localhost:5173
-Backend:  http://localhost:8000
+## 🚀 Inicio Rápido
 
-## Modulos (44 total)
+```bash
+git clone https://github.com/oihan777/netprobe-security-suite.git
+cd netprobe-security-suite/netprobe
+sudo bash install.sh    # una sola vez (~5-10 min)
+sudo bash arrancar.sh   # cada vez que quieras usarlo
+```
 
-Reconocimiento (8): nmap
-Flood/DoS (6): hping3, scapy, httpx
-Fuerza Bruta (6): hydra, SecLists
-Protocolo (5): scapy raw sockets
-Web Attacks (6): sqlmap, XSStrike, httpx
-DNS (4): scapy, dnspython
-Evasion (5): nmap, scapy
-Firewall (4): socket, scapy
+Abre el navegador en **http://localhost:5173**
 
-## Scoring
+Para ver la documentación completa consulta la carpeta [`docs/`](docs/)
 
-BLOCKED  = 100 pts (defensa perfecta)
-DETECTED = 60  pts (detectado)
-PARTIAL  = 35  pts (parcial)
-PASSED   = 0   pts (vulnerable)
-
-## IA Analyst
-
-Configura tu API Key de Z.ai (open.bigmodel.cn) en el campo del sidebar para
-habilitar el analisis inteligente con GLM-4.

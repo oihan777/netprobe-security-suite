@@ -16,9 +16,31 @@ def get_db():
 
 def init_db():
     db = get_db()
+    # ── Cases ─────────────────────────────────────────────────────
+    db.execute("""
+        CREATE TABLE IF NOT EXISTS cases (
+            id          TEXT PRIMARY KEY,
+            name        TEXT NOT NULL,
+            description TEXT DEFAULT '',
+            target      TEXT DEFAULT '',
+            created_at  TEXT NOT NULL,
+            updated_at  TEXT NOT NULL,
+            color       TEXT DEFAULT '#0a84ff',
+            icon        TEXT DEFAULT 'folder',
+            total_scans INTEGER DEFAULT 0,
+            last_score  INTEGER
+        )
+    """)
+    # Migración: añadir case_id a sessions si no existe
+    try:
+        db.execute("ALTER TABLE sessions ADD COLUMN case_id TEXT")
+        db.commit()
+    except Exception:
+        pass
     db.execute("""
         CREATE TABLE IF NOT EXISTS sessions (
             id          TEXT PRIMARY KEY,
+            case_id     TEXT,
             target      TEXT NOT NULL,
             started_at  TEXT NOT NULL,
             finished_at TEXT,
@@ -31,7 +53,8 @@ def init_db():
             errors      INTEGER DEFAULT 0,
             profile     TEXT,
             notes       TEXT DEFAULT '',
-            tags        TEXT DEFAULT '[]'
+            tags        TEXT DEFAULT '[]',
+            FOREIGN KEY (case_id) REFERENCES cases(id)
         )
     """)
     db.execute("""
@@ -57,14 +80,14 @@ def init_db():
     db.close()
 
 # ── Sessions CRUD ─────────────────────────────────────────────────
-def create_session(target: str, profile: str = None) -> str:
+def create_session(target: str, profile: str = None, case_id: str = None) -> str:
     import uuid
     sid = str(uuid.uuid4())[:12]
     now = datetime.now().isoformat()
     db  = get_db()
     db.execute("""INSERT INTO sessions
-        (id, target, started_at, profile) VALUES (?,?,?,?)""",
-        (sid, target, now, profile))
+        (id, case_id, target, started_at, profile) VALUES (?,?,?,?,?)""",
+        (sid, case_id, target, now, profile))
     db.commit()
     db.close()
     return sid
@@ -288,3 +311,175 @@ def register_history_routes(app):
     @app.get("/api/history/dashboard")
     def dashboard(target: str = None):
         return get_dashboard_stats(target)
+
+# ── Cases CRUD ─────────────────────────────────────────────────────
+
+def create_case(name: str, description: str = "", target: str = "", color: str = "#0a84ff", icon: str = "folder") -> dict:
+    import uuid
+    cid = str(uuid.uuid4())[:12]
+    now = datetime.now().isoformat()
+    db  = get_db()
+    db.execute("""INSERT INTO cases (id, name, description, target, created_at, updated_at, color, icon)
+        VALUES (?,?,?,?,?,?,?,?)""", (cid, name, description, target, now, now, color, icon))
+    db.commit()
+    db.close()
+    return get_case(cid)
+
+def get_case(cid: str) -> Optional[dict]:
+    db  = get_db()
+    row = db.execute("SELECT * FROM cases WHERE id=?", (cid,)).fetchone()
+    db.close()
+    return dict(row) if row else None
+
+def list_cases() -> list:
+    db   = get_db()
+    rows = db.execute("SELECT * FROM cases ORDER BY updated_at DESC").fetchall()
+    db.close()
+    result = []
+    for r in rows:
+        c = dict(r)
+        # Count sessions for this case
+        db2 = get_db()
+        cnt = db2.execute("SELECT COUNT(*) FROM sessions WHERE case_id=?", (c["id"],)).fetchone()[0]
+        avg = db2.execute("SELECT AVG(score) FROM sessions WHERE case_id=? AND score IS NOT NULL", (c["id"],)).fetchone()[0]
+        last = db2.execute("SELECT score FROM sessions WHERE case_id=? ORDER BY started_at DESC LIMIT 1", (c["id"],)).fetchone()
+        db2.close()
+        c["total_scans"] = cnt
+        c["avg_score"]   = round(avg, 1) if avg else None
+        c["last_score"]  = last[0] if last else None
+        result.append(c)
+    return result
+
+def update_case(cid: str, **kwargs) -> Optional[dict]:
+    allowed = {"name", "description", "target", "color", "icon"}
+    updates = {k: v for k, v in kwargs.items() if k in allowed}
+    if not updates:
+        return get_case(cid)
+    updates["updated_at"] = datetime.now().isoformat()
+    cols = ", ".join(f"{k}=?" for k in updates)
+    vals = list(updates.values()) + [cid]
+    db = get_db()
+    db.execute(f"UPDATE cases SET {cols} WHERE id=?", vals)
+    db.commit()
+    db.close()
+    return get_case(cid)
+
+def delete_case(cid: str, delete_sessions: bool = False):
+    db = get_db()
+    if delete_sessions:
+        # Get all session IDs for this case
+        sids = [r[0] for r in db.execute("SELECT id FROM sessions WHERE case_id=?", (cid,)).fetchall()]
+        for sid in sids:
+            db.execute("DELETE FROM session_results WHERE session_id=?", (sid,))
+        db.execute("DELETE FROM sessions WHERE case_id=?", (cid,))
+    else:
+        # Orphan sessions (unlink from case)
+        db.execute("UPDATE sessions SET case_id=NULL WHERE case_id=?", (cid,))
+    db.execute("DELETE FROM cases WHERE id=?", (cid,))
+    db.commit()
+    db.close()
+
+def register_cases_routes(app):
+    from pydantic import BaseModel
+    from typing import Optional as Opt
+
+    init_db()
+
+    class CaseCreate(BaseModel):
+        name:        str
+        description: Opt[str] = ""
+        target:      Opt[str] = ""
+        color:       Opt[str] = "#0a84ff"
+        icon:        Opt[str] = "folder"
+
+    class CaseUpdate(BaseModel):
+        name:        Opt[str] = None
+        description: Opt[str] = None
+        target:      Opt[str] = None
+        color:       Opt[str] = None
+        icon:        Opt[str] = None
+
+    @app.get("/api/cases")
+    def api_list_cases():
+        return {"cases": list_cases()}
+
+    @app.post("/api/cases")
+    def api_create_case(body: CaseCreate):
+        c = create_case(body.name, body.description or "", body.target or "", body.color or "#0a84ff", body.icon or "folder")
+        return c
+
+    @app.get("/api/cases/{cid}")
+    def api_get_case(cid: str):
+        c = get_case(cid)
+        if not c:
+            from fastapi import HTTPException
+            raise HTTPException(404, "Case not found")
+        return c
+
+    @app.patch("/api/cases/{cid}")
+    def api_update_case(cid: str, body: CaseUpdate):
+        updates = {k: v for k, v in body.dict().items() if v is not None}
+        return update_case(cid, **updates) or {"error": "Not found"}
+
+    @app.delete("/api/cases/{cid}")
+    def api_delete_case(cid: str, delete_sessions: bool = False):
+        delete_case(cid, delete_sessions)
+        return {"ok": True}
+
+    @app.get("/api/cases/{cid}/sessions")
+    def api_case_sessions(cid: str, limit: int = 50):
+        db = get_db()
+        rows = db.execute(
+            "SELECT * FROM sessions WHERE case_id=? ORDER BY started_at DESC LIMIT ?",
+            (cid, limit)
+        ).fetchall()
+        db.close()
+        return {"sessions": [dict(r) for r in rows]}
+
+    @app.get("/api/cases/{cid}/dashboard")
+    def api_case_dashboard(cid: str):
+        return get_dashboard_stats_by_case(cid)
+
+def get_dashboard_stats_by_case(cid: str) -> dict:
+    """Dashboard stats filtrados por case_id."""
+    db = get_db()
+    sessions = db.execute(
+        "SELECT * FROM sessions WHERE case_id=? ORDER BY started_at DESC LIMIT 30", (cid,)
+    ).fetchall()
+
+    if not sessions:
+        db.close()
+        return {"sessions": [], "score_history": [], "status_totals": {}, "top_vulnerable": [], "total_sessions": 0}
+
+    score_history = [
+        {"date": s["started_at"][:10], "score": s["score"], "target": s["target"], "id": s["id"]}
+        for s in sessions if s["score"] is not None
+    ]
+    totals = {"BLOCKED":0,"DETECTED":0,"PARTIAL":0,"VULNERABLE":0,"ERROR":0}
+    for s in sessions:
+        totals["BLOCKED"]    += s["blocked"]    or 0
+        totals["DETECTED"]   += s["detected"]   or 0
+        totals["PARTIAL"]    += s["partial"]     or 0
+        totals["VULNERABLE"] += s["vulnerable"]  or 0
+        totals["ERROR"]      += s["errors"]      or 0
+
+    rows = db.execute("""
+        SELECT sr.module_name, sr.module_id, sr.category,
+               COUNT(*) as hits, AVG(sr.score) as avg_score
+        FROM session_results sr
+        JOIN sessions s ON sr.session_id = s.id
+        WHERE s.case_id=? AND sr.status IN ('PASSED','PARTIAL')
+        GROUP BY sr.module_id ORDER BY hits DESC LIMIT 8
+    """, (cid,)).fetchall()
+    db.close()
+
+    return {
+        "total_sessions":  len(sessions),
+        "sessions":        [dict(s) for s in sessions[:10]],
+        "score_history":   list(reversed(score_history)),
+        "status_totals":   totals,
+        "top_vulnerable":  [dict(r) for r in rows],
+        "latest_score":    sessions[0]["score"] if sessions else None,
+        "avg_score":       round(sum(s["score"] for s in sessions if s["score"]) /
+                           max(1, sum(1 for s in sessions if s["score"])), 1) if any(s["score"] for s in sessions) else None,
+    }

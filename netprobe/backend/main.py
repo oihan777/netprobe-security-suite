@@ -14,7 +14,8 @@ from datetime import datetime
 from typing import Callable, Optional
 
 import uvicorn
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Request
+from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 
 # ─────────────────────────── logging ─────────────────────────────
@@ -150,6 +151,7 @@ async def websocket_endpoint(ws: WebSocket):
                 intensity  = int(msg.get("intensity", 3))
                 duration   = int(msg.get("duration", 30))
                 interface  = msg.get("interface", "eth0")
+                case_id    = msg.get("case_id", None)
 
                 validation = validate_target_ip(target)
                 if not validation["valid"]:
@@ -230,7 +232,7 @@ async def websocket_endpoint(ws: WebSocket):
                 _sid = None
                 try:
                     from history import create_session, finish_session, save_result
-                    _sid = create_session(target)
+                    _sid = create_session(target, case_id=case_id)
                     for _r in results:
                         save_result(_sid, _r)
                     finish_session(_sid, results, global_score)
@@ -254,6 +256,7 @@ async def websocket_endpoint(ws: WebSocket):
                 modules   = msg.get("modules", [])
                 intensity = int(msg.get("intensity", 3))
                 duration  = int(msg.get("duration", 30))
+                mc_case_id = msg.get("case_id", None)
 
                 # Validate all targets first
                 valid_targets = []
@@ -316,7 +319,7 @@ async def websocket_endpoint(ws: WebSocket):
 
                     # Save to history
                     try:
-                        _sid = create_session(t_target, "multi-target")
+                        _sid = create_session(t_target, "multi-target", case_id=mc_case_id)
                         for _r in t_results: save_result(_sid, _r)
                         finish_session(_sid, t_results, t_score)
                     except Exception as _he:
@@ -358,7 +361,7 @@ async def websocket_endpoint(ws: WebSocket):
                         limit=1024*256,
                     )
                     try:
-                        stdout, _ = await asyncio.wait_for(proc.communicate(), timeout=60)
+                        stdout, _ = await asyncio.wait_for(proc.communicate(), timeout=600)
                         output = stdout.decode("utf-8", errors="replace").strip()
                         if output:
                             for line in output.split("\n"):
@@ -368,7 +371,7 @@ async def websocket_endpoint(ws: WebSocket):
                                   f"Proceso finalizado (código {rc})", "custom")
                     except asyncio.TimeoutError:
                         proc.kill()
-                        await log("ERROR", "Comando cancelado: timeout 60s", "custom")
+                        await log("ERROR", "Comando cancelado: timeout 10min", "custom")
                 except Exception as e:
                     await log("ERROR", f"Error ejecutando comando: {e}", "custom")
 
@@ -507,8 +510,52 @@ from ai_engine import register_ai_routes
 register_ai_routes(app)
 
 # ─────────────────────────── Discovery routes ─────────────────────
-from network_discovery import register_discovery_routes
+from network_discovery import register_discovery_routes, get_local_networks, discover_hosts_streaming
 register_discovery_routes(app)
+
+# REST wrapper for NetworkTopologyMap component
+@app.post("/api/network/discover")
+async def network_discover_rest(request: Request):
+    """REST endpoint que usa la misma lógica que el WebSocket de discovery"""
+    import ipaddress as _ip
+    body = await request.json()
+    subnet = body.get("subnet", "auto")
+
+    # Auto-detect local subnet
+    if subnet in ("auto", ""):
+        nets = await get_local_networks()
+        private = [n for n in nets if n.get("is_private", True)]
+        subnet = private[0]["cidr"] if private else "192.168.1.0/24"
+
+    # Validate CIDR
+    try:
+        net = _ip.IPv4Network(subnet, strict=False)
+        if not net.is_private:
+            return JSONResponse({"error": "Solo redes privadas RFC1918"}, status_code=400)
+    except Exception as e:
+        return JSONResponse({"error": f"CIDR inválido: {e}"}, status_code=400)
+
+    # Run discovery with a fake WS collector
+    collected_hosts = {}  # ip -> host dict
+
+    class FakeWS:
+        async def send_json(self, data):
+            t = data.get("type")
+            if t == "host":
+                h = data.get("host", {})
+                collected_hosts[h.get("ip")] = h
+            elif t == "host_update":
+                h = data.get("host", {})
+                ip = h.get("ip")
+                if ip and ip in collected_hosts:
+                    collected_hosts[ip].update(h)
+                else:
+                    collected_hosts[ip] = h
+
+    await discover_hosts_streaming(subnet, FakeWS())
+    hosts = list(collected_hosts.values())
+    return {"hosts": hosts, "cidr": subnet, "total": len(hosts)}
+
 
 # ─────────────────────────── CVE routes ──────────────────────────
 from cve_lookup import register_cve_routes
@@ -517,12 +564,19 @@ register_cve_routes(app)
 # ─────────────────────────── Autopilot routes ────────────────────
 from autopilot import register_autopilot_routes
 register_autopilot_routes(app)
+from autopilot_pdf import register_autopilot_pdf_routes
+register_autopilot_pdf_routes(app)
 
 # ─────────────────────────── History routes ─────────────────────
+from log_analyzer import register_log_routes
+from osint import register_osint_routes
 from smart_score import register_smart_score_routes, smart_score as compute_smart_score, calculate_weighted_score
-from history import register_history_routes, create_session, finish_session, save_result, init_db as history_init_db
+from history import register_history_routes, register_cases_routes, create_session, finish_session, save_result, init_db as history_init_db
+register_log_routes(app)
+register_osint_routes(app)
 register_smart_score_routes(app)
 register_history_routes(app)
+register_cases_routes(app)
 history_init_db()
 
 # ─────────────────────────── PDF routes ─────────────────────────
@@ -532,6 +586,22 @@ register_pdf_routes(app)
 # ─────────────────────────── Scheduler routes ───────────────────
 from scheduler import register_scheduler_routes
 register_scheduler_routes(app)
+
+# ─────────────────────────── Reverse Shell Generator ────────────
+from reverse_shell import register_revshell_routes
+register_revshell_routes(app)
+
+# ─────────────────────────── IDS Rule Generator ──────────────────
+from ids_rules import register_ids_routes
+register_ids_routes(app)
+
+# ─────────────────────────── Payload Generator ───────────────────
+from payload_generator import register_payload_routes
+register_payload_routes(app)
+
+# ─────────────────────────── STRIDE Threat Modeling ──────────────
+from stride import register_stride_routes
+register_stride_routes(app)
 
 # ─────────────────────────── entrypoint ──────────────────────────
 if __name__ == "__main__":
