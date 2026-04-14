@@ -190,7 +190,7 @@ bash parar.sh            # Para todos los procesos limpiamente
 
 ## 🤝 Contribuir
 
-Las contribuciones son bienvenidas. Lee [CONTRIBUTING.md](.github/CONTRIBUTING.md) antes de abrir un PR.
+Las contribuciones son bienvenidas. Lee [CONTRIBUTING.md](netprobe/.github/.github/CONTRIBUTING.md) antes de abrir un PR.
 
 1. Fork del repositorio
 2. Crea una rama: `git checkout -b feature/nueva-funcionalidad`
@@ -201,7 +201,7 @@ Las contribuciones son bienvenidas. Lee [CONTRIBUTING.md](.github/CONTRIBUTING.m
 
 ## 🔒 Seguridad
 
-Si encuentras una vulnerabilidad en NetProbe, repórtala de forma responsable siguiendo [SECURITY.md](.github/SECURITY.md). No abras issues públicos para vulnerabilidades de seguridad.
+Si encuentras una vulnerabilidad en NetProbe, repórtala de forma responsable siguiendo [SECURITY.md](netprobe/.github/SECURITY.md). No abras issues públicos para vulnerabilidades de seguridad.
 
 ---
 
