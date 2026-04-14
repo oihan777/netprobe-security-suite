@@ -603,6 +603,10 @@ register_payload_routes(app)
 from stride import register_stride_routes
 register_stride_routes(app)
 
+# ─────────────────────────── Case Export ─────────────────────────
+from case_export import register_export_routes
+register_export_routes(app)
+
 # ─────────────────────────── entrypoint ──────────────────────────
 if __name__ == "__main__":
     print("""

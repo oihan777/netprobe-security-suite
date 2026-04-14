@@ -12,4 +12,5 @@ pyyaml==6.0.1
 rich==13.7.1
 psutil==5.9.8
 netifaces==0.11.0
-zhipuai>=2.1.0
+reportlab>=4.0.0
+Pillow>=10.0.0

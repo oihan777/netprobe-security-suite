@@ -76,6 +76,28 @@ export default function App() {
     setActiveTab('terminal');
   };
 
+  const handleExportCase = async (caseId, caseName) => {
+    try {
+      const res = await fetch(`http://localhost:8000/api/cases/${caseId}/export?include_pdf=true`);
+      if (!res.ok) throw new Error(`Error ${res.status}`);
+      const blob = await res.blob();
+      const url  = URL.createObjectURL(blob);
+      const a    = document.createElement('a');
+      // Use filename from Content-Disposition header if available
+      const cd   = res.headers.get('Content-Disposition') || '';
+      const match = cd.match(/filename="([^"]+)"/);
+      a.href     = url;
+      a.download = match ? match[1] : `netprobe_${caseName.replace(/\s+/g,'_')}.zip`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('Export failed:', err);
+      alert('Error exportando el caso: ' + err.message);
+    }
+  };
+
   // Reload hosts when case changes
   useEffect(() => {
     try {
@@ -104,7 +126,7 @@ export default function App() {
             duration={duration} setDuration={setDuration}
             onStartScan={handleStartScan} onNewScan={handleNewScan} onStopScan={ws.stopScan} resultCount={ws.results.length}
             isRunning={ws.isRunning} connectionStatus={ws.connectionStatus}
-            activeCase={activeCase} onChangeCase={() => setActiveCase(null)}
+            activeCase={activeCase} onChangeCase={() => setActiveCase(null)} onExportCase={handleExportCase}
             caseId={activeCase?.id || null} onHostsChange={setDiscoveredHosts}
           />
 

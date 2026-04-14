@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Target, Wifi, Gauge, Clock, Play, Square, AlertCircle, CheckCircle2, Key, Activity, FolderOpen, ChevronLeft } from 'lucide-react';
+import { Target, Wifi, Gauge, Clock, Play, Square, AlertCircle, CheckCircle2, Key, Activity, FolderOpen, ChevronLeft, Download, Loader2 } from 'lucide-react';
 import { MODULES, CATEGORIES } from '../../data/modules.js';
 import { Button } from '../ui/Button.jsx';
 import { Input } from '../ui/Input.jsx';
@@ -16,13 +16,14 @@ export function Sidebar({
   selectedModules, setSelectedModules,
   intensity, setIntensity, duration, setDuration,
   onStartScan, onNewScan, onStopScan, isRunning, connectionStatus, resultCount = 0,
-  activeCase, onChangeCase,
+  activeCase, onChangeCase, onExportCase,
   caseId = null, onHostsChange = null,
 }) {
   const [ipError, setIpError]       = useState('');
   const [filterCat, setFilterCat]   = useState('all');
   const [search, setSearch]         = useState('');
   const [showApiKey, setShowApiKey] = useState(false);
+  const [exporting, setExporting]   = useState(false);
 
   useEffect(() => {
     if (target) { const v = validateIP(target); setIpError(v.valid ? '' : v.message); }
@@ -65,6 +66,23 @@ export function Sidebar({
           <div className="flex-1 min-w-0">
             <p className="text-[10px] font-semibold truncate" style={{ color: activeCase.color }}>{activeCase.name}</p>
           </div>
+          {/* Export button */}
+          <button
+            onClick={async () => {
+              if (exporting) return;
+              setExporting(true);
+              try { await onExportCase(activeCase.id, activeCase.name); }
+              finally { setExporting(false); }
+            }}
+            disabled={exporting}
+            className="flex items-center gap-0.5 text-[9px] px-1.5 py-0.5 rounded transition-all flex-shrink-0"
+            style={{ color: exporting ? '#57cbde' : 'rgba(87,203,222,0.85)', background: 'rgba(87,203,222,0.08)', border: '1px solid rgba(87,203,222,0.18)' }}
+            title="Exportar caso como ZIP">
+            {exporting
+              ? <Loader2 className="w-2.5 h-2.5 animate-spin" />
+              : <Download className="w-2.5 h-2.5" />}
+            {exporting ? 'ZIP...' : 'ZIP'}
+          </button>
           <button onClick={onChangeCase}
             className="flex items-center gap-0.5 text-[9px] px-1.5 py-0.5 rounded transition-colors flex-shrink-0"
             style={{ color: 'rgba(143,152,160,0.9)', background: 'rgba(42,71,94,0.4)' }}
