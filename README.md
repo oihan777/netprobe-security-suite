@@ -180,11 +180,11 @@ bash parar.sh            # Para todos los procesos limpiamente
 
 | Documento | Descripción |
 |---|---|
-| [netprobe/docs/INSTALACION.md](docs/INSTALACION.md) | Guía detallada por OS, troubleshooting |
-| [docs/MANUAL.md](docs/MANUAL.md) | Manual completo de todas las funcionalidades |
-| [docs/MODULOS.md](docs/MODULOS.md) | Referencia de los 44 módulos |
-| [docs/API.md](docs/API.md) | API REST + WebSocket para integraciones |
-| [docs/FAQ.md](docs/FAQ.md) | Preguntas frecuentes |
+| [docs/INSTALACION.md](netprobe/docs/INSTALACION.md) | Guía detallada por OS, troubleshooting |
+| [docs/MANUAL.md](netprobe/docs/MANUAL.md) | Manual completo de todas las funcionalidades |
+| [docs/MODULOS.md](netprobe/docs/MODULOS.md) | Referencia de los 44 módulos |
+| [docs/API.md](netprobe/docs/API.md) | API REST + WebSocket para integraciones |
+| [docs/FAQ.md](netprobe/docs/FAQ.md) | Preguntas frecuentes |
 
 ---
 
